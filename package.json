@@ -1,0 +1,64 @@
+{
+  "name": "flex-sankey",
+  "version": "0.1.0",
+  "description": "A flexible, modular Sankey diagram layout library with improved path geometry.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Claudio Esperan\u00e7a",
+  "contributors": [
+    "Barbara Castro",
+    "Doris Kosminsky",
+    "Renato Campos Mauro"
+  ],
+  "keywords": [
+    "sankey",
+    "flow-diagram",
+    "graph-drawing",
+    "sugiyama",
+    "layout",
+    "visualization",
+    "d3"
+  ],
+  "sideEffects": false,
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./paths": "./src/paths/index.js",
+    "./layout": "./src/layout/index.js",
+    "./render": "./src/render/index.js",
+    "./data": "./src/data/index.js",
+    "./metrics": "./src/metrics/index.js"
+  },
+  "files": [
+    "src",
+    "types",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "types": "tsc -p tsconfig.build.json",
+    "check": "npm run typecheck && npm run test",
+    "bench:data": "node benchmarks/generate.js",
+    "bench:verify": "node benchmarks/verify.js",
+    "bench": "node benchmarks/run.js",
+    "bench:charts": "node benchmarks/charts.js",
+    "bench:all": "npm run bench:data && npm run bench && npm run bench:charts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.1",
+    "d3-sankey": "^0.12.3",
+    "d3-sankey-diagram": "^0.9.4",
+    "d3-selection": "^3.0.0",
+    "jsdom": "^30.1.0",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.0"
+  },
+  "types": "./types/index.d.ts"
+}

@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+title: flex-sankey
+message: If you use this software, please cite it as below.
+type: software
+authors:
+  - family-names: Esperança
+    given-names: Claudio
+    orcid: https://orcid.org/0000-0002-4942-3624
+    affiliation: COPPE / UFRJ, Brazil
+  - family-names: Castro
+    given-names: Barbara
+    orcid: https://orcid.org/0000-0002-0794-5643
+    affiliation: EBA / UFRJ, Brazil
+  # ORCID pending: the identifier above is the one the EuroVis submission
+  # attributed to Doris Kosminsky. Confirm which author it belongs to.
+  - family-names: Kosminsky
+    given-names: Doris
+    affiliation: EBA / UFRJ, Brazil
+  - family-names: Mauro
+    given-names: Renato Campos
+    orcid: https://orcid.org/0000-0002-4363-499X
+    affiliation: CEFET/RJ, Brazil
+repository-code: https://github.com/esperanc/flex-sankey
+license: MIT
+version: 0.1.0
+abstract: >-
+  A flexible, modular Sankey diagram layout library that separates the
+  combinatorial and geometric stages of layout optimisation and introduces a
+  ribbon geometry built from paired cubic Béziers, which eliminates overlap
+  between parallel links.
+keywords:
+  - sankey diagram
+  - flow visualization
+  - graph drawing
+  - layout algorithm

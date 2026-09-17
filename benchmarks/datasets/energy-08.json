@@ -1,0 +1,179 @@
+{
+  "suite": "energy",
+  "id": "energy-08",
+  "randomSeed": 0.8,
+  "regularity": 0.1,
+  "optionalProbability": 0.8,
+  "links": [
+    {
+      "source": "Hydro",
+      "target": "Electricity",
+      "value": 286.07084205664034
+    },
+    {
+      "source": "Biofuels",
+      "target": "Electricity",
+      "value": 31.207750291469914
+    },
+    {
+      "source": "Biofuels",
+      "target": "Transport",
+      "value": 20.980453421879627
+    },
+    {
+      "source": "Biofuels",
+      "target": "Industry",
+      "value": 7.362329308664594
+    },
+    {
+      "source": "Biofuels",
+      "target": "Residential",
+      "value": 14.534554962160556
+    },
+    {
+      "source": "Biofuels",
+      "target": "Commercial",
+      "value": 37.84908686931863
+    },
+    {
+      "source": "Biofuels",
+      "target": "Other",
+      "value": 12.646172553204108
+    },
+    {
+      "source": "Nuclear",
+      "target": "Electricity",
+      "value": 95.39781566542904
+    },
+    {
+      "source": "Geothermal",
+      "target": "Electricity",
+      "value": 197.14869663168352
+    },
+    {
+      "source": "Crude",
+      "target": "Oil Products",
+      "value": 106.62677789720853
+    },
+    {
+      "source": "Crude",
+      "target": "Exp.",
+      "value": 93.14606038454554
+    },
+    {
+      "source": "Imp.",
+      "target": "Nat Gas",
+      "value": 16.614202428698608
+    },
+    {
+      "source": "Imp.",
+      "target": "Oil Products",
+      "value": 21.21391476543783
+    },
+    {
+      "source": "Nat Gas",
+      "target": "Electricity",
+      "value": 15.332734697924652
+    },
+    {
+      "source": "Nat Gas",
+      "target": "Exp.",
+      "value": 15.470670024125265
+    },
+    {
+      "source": "Nat Gas",
+      "target": "Transport",
+      "value": 9.106689317470057
+    },
+    {
+      "source": "Nat Gas",
+      "target": "Industry",
+      "value": 3.5055420925347622
+    },
+    {
+      "source": "Nat Gas",
+      "target": "Residential",
+      "value": 10.19143118676769
+    },
+    {
+      "source": "Nat Gas",
+      "target": "Commercial",
+      "value": 9.584291925095727
+    },
+    {
+      "source": "Nat Gas",
+      "target": "Other",
+      "value": 12.624185948439665
+    },
+    {
+      "source": "Oil Products",
+      "target": "Electricity",
+      "value": 12.812230164458535
+    },
+    {
+      "source": "Oil Products",
+      "target": "Heat & Waste",
+      "value": 25.644453814080855
+    },
+    {
+      "source": "Oil Products",
+      "target": "Transport",
+      "value": 6.309836140011893
+    },
+    {
+      "source": "Oil Products",
+      "target": "Industry",
+      "value": 26.155316077306342
+    },
+    {
+      "source": "Oil Products",
+      "target": "Residential",
+      "value": 20.714409571689828
+    },
+    {
+      "source": "Oil Products",
+      "target": "Commercial",
+      "value": 20.17311662532773
+    },
+    {
+      "source": "Oil Products",
+      "target": "Other",
+      "value": 16.031330269771168
+    },
+    {
+      "source": "Electricity",
+      "target": "Exp.",
+      "value": 52.02553279135601
+    },
+    {
+      "source": "Electricity",
+      "target": "Heat & Waste",
+      "value": 55.32187120131179
+    },
+    {
+      "source": "Electricity",
+      "target": "Transport",
+      "value": 61.53537218032649
+    },
+    {
+      "source": "Electricity",
+      "target": "Industry",
+      "value": 131.77347538954217
+    },
+    {
+      "source": "Electricity",
+      "target": "Residential",
+      "value": 82.74677045472521
+    },
+    {
+      "source": "Electricity",
+      "target": "Commercial",
+      "value": 91.28882706831601
+    },
+    {
+      "source": "Electricity",
+      "target": "Other",
+      "value": 163.27822042202848
+    }
+  ]
+}

@@ -1,0 +1,194 @@
+{
+  "suite": "energy",
+  "id": "energy-07",
+  "randomSeed": 0.7,
+  "regularity": 0.1,
+  "optionalProbability": 0.8,
+  "links": [
+    {
+      "source": "Hydro",
+      "target": "Electricity",
+      "value": 85.90914077326336
+    },
+    {
+      "source": "Nat Gas",
+      "target": "Electricity",
+      "value": 20.36535789823888
+    },
+    {
+      "source": "Nat Gas",
+      "target": "Exp.",
+      "value": 32.572739819631984
+    },
+    {
+      "source": "Nat Gas",
+      "target": "Transport",
+      "value": 31.768475836274536
+    },
+    {
+      "source": "Nat Gas",
+      "target": "Industry",
+      "value": 46.399387765229235
+    },
+    {
+      "source": "Nat Gas",
+      "target": "Residential",
+      "value": 13.476449615949383
+    },
+    {
+      "source": "Nat Gas",
+      "target": "Commercial",
+      "value": 24.14382462926724
+    },
+    {
+      "source": "Nat Gas",
+      "target": "Other",
+      "value": 30.04725320179894
+    },
+    {
+      "source": "Nuclear",
+      "target": "Electricity",
+      "value": 117.38432918766446
+    },
+    {
+      "source": "Geothermal",
+      "target": "Electricity",
+      "value": 189.87691825627277
+    },
+    {
+      "source": "Solar & Wind",
+      "target": "Electricity",
+      "value": 185.73500513424986
+    },
+    {
+      "source": "Imp.",
+      "target": "Crude",
+      "value": 10.84604529468251
+    },
+    {
+      "source": "Imp.",
+      "target": "Coal",
+      "value": 55.51822806962523
+    },
+    {
+      "source": "Imp.",
+      "target": "Oil Products",
+      "value": 24.138397933392003
+    },
+    {
+      "source": "Imp.",
+      "target": "Electricity",
+      "value": 24.27686546769278
+    },
+    {
+      "source": "Coal",
+      "target": "Electricity",
+      "value": 20.595583808471574
+    },
+    {
+      "source": "Coal",
+      "target": "Exp.",
+      "value": 4.34869585483377
+    },
+    {
+      "source": "Coal",
+      "target": "Transport",
+      "value": 24.36064434829362
+    },
+    {
+      "source": "Coal",
+      "target": "Industry",
+      "value": 13.02233646061974
+    },
+    {
+      "source": "Coal",
+      "target": "Residential",
+      "value": 8.281129926852948
+    },
+    {
+      "source": "Coal",
+      "target": "Commercial",
+      "value": 12.894987949451547
+    },
+    {
+      "source": "Coal",
+      "target": "Other",
+      "value": 19.813718779167317
+    },
+    {
+      "source": "Crude",
+      "target": "Oil Products",
+      "value": 70.58875735338401
+    },
+    {
+      "source": "Oil Products",
+      "target": "Electricity",
+      "value": 12.595099902752336
+    },
+    {
+      "source": "Oil Products",
+      "target": "Exp.",
+      "value": 9.125946605812548
+    },
+    {
+      "source": "Oil Products",
+      "target": "Heat & Waste",
+      "value": 20.19198100681726
+    },
+    {
+      "source": "Oil Products",
+      "target": "Transport",
+      "value": 7.17290396335547
+    },
+    {
+      "source": "Oil Products",
+      "target": "Industry",
+      "value": 5.551990210624606
+    },
+    {
+      "source": "Oil Products",
+      "target": "Residential",
+      "value": 15.681358181908044
+    },
+    {
+      "source": "Oil Products",
+      "target": "Commercial",
+      "value": 19.15762944900809
+    },
+    {
+      "source": "Oil Products",
+      "target": "Other",
+      "value": 5.25024596649764
+    },
+    {
+      "source": "Electricity",
+      "target": "Heat & Waste",
+      "value": 140.43456794864554
+    },
+    {
+      "source": "Electricity",
+      "target": "Transport",
+      "value": 60.162461120984375
+    },
+    {
+      "source": "Electricity",
+      "target": "Industry",
+      "value": 164.98811052728797
+    },
+    {
+      "source": "Electricity",
+      "target": "Residential",
+      "value": 129.65985093587415
+    },
+    {
+      "source": "Electricity",
+      "target": "Commercial",
+      "value": 105.44881498883646
+    },
+    {
+      "source": "Electricity",
+      "target": "Other",
+      "value": 56.044494906977455
+    }
+  ]
+}
