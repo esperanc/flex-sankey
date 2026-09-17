@@ -3,7 +3,8 @@
  *
  * ```
  * renderLayout --buildScene--> Scene --paintScene--> PaintedScene --+--> sceneToSVG  (string, headless)
- *              (geometry)            (style)                        \--> sceneToDOM  (live, interactive)
+ *              (geometry)            (style)                        +--> sceneToPDF  (vector, print)
+ *                                                                    \--> sceneToDOM  (live, interactive)
  * ```
  *
  * The split means geometry can be measured without styling it, a diagram can
@@ -19,5 +20,6 @@
 export { buildScene } from "./scene.js";
 export { paintScene, ordinalColorScale, schemeCategory10 } from "./theme.js";
 export { sceneToSVG } from "./svg.js";
+export { sceneToPDF } from "./pdf.js";
 export { sceneToDOM } from "./dom.js";
 export { labelAlignment, resolveLabelPos } from "./labels.js";

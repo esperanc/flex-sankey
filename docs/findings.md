@@ -56,6 +56,22 @@ figure:
   differently. On an arc-based ribbon, whose two sides have different radii,
   this displaced the recovered line by up to half the ribbon's breadth.
 
+**"The number of crossings dropped from 122 to 73" with totalizing nodes.**
+Correct for the metric the submission used, but that metric is not what a
+reader sees. Counted *topologically* --- as inversions between adjacent layers,
+which is what the ordering stage minimises --- totalizing nodes do reduce
+crossings, by 46% on average over six datasets (113 to 61), close to the
+reported figure. Counted *geometrically* --- as intersections between the drawn
+ribbons --- they **increase** by 64% (113 to 185), because splitting each
+bundled link in two obliges the ribbons to fan in and out of the totalizing
+node.
+
+For diagrams without totalizing nodes the two counts agree exactly on every
+dataset measured, which is a useful mutual check on two independent
+implementations. The benefit of totalizing nodes is in overlap, which falls
+from 6.5% to 2.5%, and in visual density --- not in crossings as drawn. The
+manuscript states this explicitly.
+
 **Recommended wording.** Report comparable overlap to `d3-sankey-diagram` and
 roughly threefold better than `d3-sankey`, and lead the section on the
 crossings and speed results, which are strong and hold across both scales.

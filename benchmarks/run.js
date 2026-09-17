@@ -99,6 +99,38 @@ const csv = [
 ].join("\n");
 writeFileSync(join(outDir, "results.csv"), csv + "\n");
 
+// --- wide-format tables, one per suite, for direct use in the manuscript ----
+// pgfplots reads these straight from the file, so every chart in the paper is
+// drawn from the committed results rather than from a pasted image.
+
+for (const suite of suites) {
+  const header = ["dataset"];
+  for (const metric of ["crossings", "overlap", "length", "ms"]) {
+    for (const library of LIBRARIES) {
+      header.push(`${metric}_${library.id.replace(/-/g, "")}`);
+    }
+  }
+  const lines = [header.join(",")];
+  for (const entry of suite.datasets) {
+    const cells = [entry.id.replace(/^[a-z]+-/, "")];
+    /** @param {string} key @param {number} scale */
+    const push = (key, scale) => {
+      for (const library of LIBRARIES) {
+        const row = rows.find(
+          (r) => r.dataset === entry.id && r.library === library.id && !r.failed
+        );
+        cells.push(row ? String(+(row[key] * scale).toFixed(4)) : "");
+      }
+    };
+    push("crossings", 1);
+    push("overlapRatio", 100);
+    push("totalLength", 1);
+    push("layoutMs", 1);
+    lines.push(cells.join(","));
+  }
+  writeFileSync(join(outDir, `paper-${suite.id}.csv`), lines.join("\n") + "\n");
+}
+
 // --- console summary -------------------------------------------------------
 
 /**
