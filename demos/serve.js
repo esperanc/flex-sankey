@@ -5,6 +5,10 @@
  * permit over HTTP, not from the filesystem. Written against `node:http` alone
  * so that running the demos pulls in no dependencies.
  *
+ * Serves the whole package directory, so the root landing page, the demos and
+ * the library source are all reachable exactly as they will be on GitHub
+ * Pages.
+ *
  * Usage: `npm run demos` then open the printed address.
  *
  * SPDX-License-Identifier: MIT
@@ -35,7 +39,7 @@ createServer(async (req, res) => {
   try {
     const url = new URL(req.url ?? "/", `http://${req.headers.host}`);
     let path = decodeURIComponent(url.pathname);
-    if (path === "/") path = "/demos/index.html";
+    if (path === "/") path = "/index.html";
 
     const target = normalize(join(root, path));
     // Refuse anything that escapes the package directory.

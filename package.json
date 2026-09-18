@@ -33,6 +33,7 @@
     "src",
     "types",
     "demos",
+    "index.html",
     "LICENSE",
     "README.md"
   ],
@@ -62,5 +63,10 @@
     "typescript": "^5.7.2",
     "vitest": "^3.0.0"
   },
-  "types": "./types/index.d.ts"
+  "types": "./types/index.d.ts",
+  "homepage": "https://esperanc.github.io/flex-sankey/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esperanc/flex-sankey.git"
+  }
 }
