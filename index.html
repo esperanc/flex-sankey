@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>flex-sankey — modular Sankey diagram layout</title>
-<meta name="description" content="A modular Sankey diagram layout library for JavaScript: crossing reduction by simulated annealing, node placement by a spring relaxation, and a ribbon geometry that keeps parallel links from overlapping.">
+<meta name="description" content="A modular Sankey diagram layout library for JavaScript: crossing reduction by simulated annealing, node placement by a spring relaxation, overlap-free ribbon geometry, and packed paths, totalizing and hidden nodes built into the layout itself.">
 <style>
 :root {
   --bg: #ffffff;
@@ -95,8 +95,9 @@ footer a { color: var(--muted); }
   <h1>flex-sankey</h1>
   <p class="tagline">
     A modular Sankey diagram layout library for JavaScript. Crossing reduction
-    by simulated annealing, node placement by a spring relaxation, and a ribbon
-    geometry that keeps parallel links from overlapping.
+    by simulated annealing, node placement by a spring relaxation, a ribbon
+    geometry that keeps parallel links from overlapping, and three
+    clutter-reducing encodings built into the layout itself.
   </p>
   <div class="links">
     <a class="primary" href="./demos/">Open the demos</a>
@@ -115,7 +116,7 @@ footer a { color: var(--muted); }
   Node.js and in the browser.
 </p>
 
-<p>Three pieces do the substantive work:</p>
+<p>Four pieces do the substantive work:</p>
 <ul>
   <li>
     <strong>Crossing reduction by local search.</strong> Ordering nodes to
@@ -138,6 +139,15 @@ footer a { color: var(--muted); }
     independent cubic Béziers whose control points derive from a reference line
     joining the node centres, which makes adjacent parallel ribbons share their
     boundary curve exactly.
+  </li>
+  <li>
+    <strong>Clutter-reducing encodings built into the layout.</strong>
+    <strong>Packed paths</strong>, <strong>totalizing nodes</strong> and
+    <strong>hidden nodes</strong> are not rendering options: hidden nodes are
+    excluded from layer assignment, dummy routing, the crossing counts and the
+    spring system; totalizing nodes thread each split link's original endpoints
+    through ordering and render layout; packing changes how vertices are built
+    and how spacing is budgeted.
   </li>
 </ul>
 
@@ -179,6 +189,58 @@ footer a { color: var(--muted); }
   together along the flow but far apart across it. There the improved
   construction still measures 0&thinsp;% overlap, while arcs reach about
   12&thinsp;% and a dilated Bézier over 60&thinsp;%.
+</p>
+
+<h2>Design features that reach into the layout</h2>
+
+<p>
+  Three encodings address the clutter that arises when a graph has high
+  connectivity, or mixes primary flows with incidental ones. None of them is a
+  rendering option: each needs the layout stages themselves to understand it.
+</p>
+
+<h3>Packed paths</h3>
+<p>
+  Links spanning several layers are routed through dummy nodes, which the
+  geometric stage otherwise spreads apart like any other node, making the paths
+  needlessly sinuous. Packing merges runs of adjacent dummies into a
+  <em>single vertex</em>, so links following similar routes run side by side.
+  The same predicate governs the whitespace budget that sets the minimum
+  separation, so the spacing is computed for the layout that is actually drawn.
+  It is safe only given a ribbon construction that keeps parallel links
+  disjoint — which is why it belongs with the geometry above.
+</p>
+
+<h3>Totalizing nodes</h3>
+<p>
+  A bundle of links sharing a category can be gathered into an intermediate node
+  that collects and redistributes them. Such a node neither emits nor receives
+  flow of its own, so each bundled link is split in two and carries the identity
+  of its <em>original</em> endpoints. That provenance is threaded through dummy
+  naming, the ordering stage's link filter, and render layout, where the two
+  halves are grouped as one visual path — so a flow stays a single traceable
+  ribbon, coloured by where it really came from rather than by the node it
+  passes through.
+</p>
+
+<h3>Hidden nodes</h3>
+<p>
+  Categories such as imports, exports and losses often carry little analytical
+  interest yet dominate the crossing count. Declaring them hidden removes them
+  from the layout entirely: they are excluded from layer assignment, skipped in
+  dummy routing, filtered out of the crossing counts so they cannot distort the
+  optimisation, and left out of the spring system. Their flows are re-attached to
+  the visible node they touch and drawn as a triangular marker with dashed rules
+  conveying magnitude. On the energy example this cuts overlap roughly fivefold.
+</p>
+
+<p>
+  The <a href="./demos/features.html">design features demo</a> switches each on
+  and off against live measurements. One result worth knowing: totalizing nodes
+  <em>reduce</em> crossings counted between adjacent layers but <em>increase</em>
+  them counted between the drawn ribbons, because splitting each link obliges
+  the ribbons to fan in and out of the new node. Their benefit is in overlap and
+  visual density, not in crossings as a reader sees them.
 </p>
 
 <h2 id="install">Install</h2>

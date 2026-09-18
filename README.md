@@ -1,8 +1,9 @@
 # flex-sankey
 
 A modular Sankey diagram layout library for JavaScript: crossing reduction by
-simulated annealing, node placement by a spring relaxation, and a ribbon
-geometry that keeps parallel links from overlapping.
+simulated annealing, node placement by a spring relaxation, a ribbon geometry
+that keeps parallel links from overlapping, and three clutter-reducing
+encodings built into the layout itself.
 
 Unlike most Sankey libraries, `flex-sankey` does not hide the layout behind a
 single entry point. Each stage of the pipeline is a separate function that can
@@ -11,7 +12,7 @@ possible to do things like reuse one diagram's node ordering to seed another's,
 or merge a horizontal and a vertical layout into one hybrid figure. The package
 has **no runtime dependencies** and runs unchanged in Node.js and the browser.
 
-Three pieces do the substantive work:
+Four pieces do the substantive work:
 
 - **Crossing reduction by local search.** Minimising link crossings is
   NP-complete, so stage 3 sweeps each layer into the order suggested by its
@@ -27,6 +28,12 @@ Three pieces do the substantive work:
   cubic Béziers whose control points derive from a reference line joining the
   node centres, which makes adjacent parallel ribbons share their boundary
   curve exactly.
+- **Clutter-reducing encodings built into the layout.** *Packed paths*,
+  *totalizing nodes* and *hidden nodes* are not rendering options: hidden nodes
+  are excluded from layer assignment, dummy routing, the crossing counts and the
+  spring system; totalizing nodes thread each split link's original endpoints
+  through ordering and render layout; packing changes how vertices are built and
+  how spacing is budgeted. See [below](#design-features-that-reach-into-the-layout).
 
 **[Website and live demos](https://esperanc.github.io/flex-sankey/)**
 
@@ -50,6 +57,44 @@ the two nodes. Anchoring that reference line at the node centres makes adjacent
 parallel ribbons share their boundary curve *exactly* — so they tile the node's
 extent with neither gap nor overlap. That property is asserted directly in
 [`test/outline.test.js`](test/outline.test.js) rather than left as a claim.
+
+## Design features that reach into the layout
+
+Three encodings address the clutter that arises when a graph has high
+connectivity, or mixes primary flows with incidental ones. None is a rendering
+option: each needs the layout stages themselves to understand it.
+
+**Packed paths.** Links spanning several layers are routed through dummy nodes,
+which the geometric stage otherwise spreads apart like any other node, making
+the paths needlessly sinuous. Packing merges runs of adjacent dummies into a
+*single vertex*, so links following similar routes run side by side. The same
+predicate governs the whitespace budget that sets the minimum separation, so
+spacing is computed for the layout that is actually drawn. It is safe only
+given a ribbon construction that keeps parallel links disjoint.
+
+**Totalizing nodes.** A bundle of links sharing a category can be gathered into
+an intermediate node that collects and redistributes them. Such a node neither
+emits nor receives flow of its own, so each bundled link is split in two and
+carries the identity of its *original* endpoints. That provenance is threaded
+through dummy naming, the ordering stage's link filter, and render layout,
+where the two halves are grouped as one visual path — so a flow stays a single
+traceable ribbon, coloured by where it really came from.
+
+**Hidden nodes.** Categories such as imports, exports and losses often carry
+little analytical interest yet dominate the crossing count. Declaring them
+hidden removes them from the layout entirely: excluded from layer assignment,
+skipped in dummy routing, filtered out of the crossing counts so they cannot
+distort the optimisation, and left out of the spring system. Their flows are
+re-attached to the visible node they touch and drawn as a triangular marker
+with dashed rules conveying magnitude. On the energy example this cuts overlap
+roughly fivefold.
+
+One result worth knowing, visible in the [design features
+demo](demos/features.html): totalizing nodes *reduce* crossings counted between
+adjacent layers but *increase* them counted between the drawn ribbons, because
+splitting each link obliges the ribbons to fan in and out of the new node.
+Their benefit is in overlap and visual density, not in crossings as a reader
+sees them.
 
 ## Install
 

@@ -30,7 +30,12 @@ abstract: >-
   coordinates are settled by a one-dimensional spring relaxation with separate
   stiffnesses for edge, node and margin springs; and links are drawn with a
   ribbon geometry built from paired cubic Béziers, which eliminates overlap
-  between parallel links.
+  between parallel links. It further supports three clutter-reducing encodings
+  that extend the layout itself rather than the renderer: packed paths, which
+  merge runs of dummy nodes into a single vertex; totalizing nodes, which gather
+  a bundle of links while preserving each link's original endpoints; and hidden
+  nodes, which are removed from layer assignment, crossing counts and the spring
+  system, and shown instead by markers on the nodes they touch.
 keywords:
   - sankey diagram
   - flow visualization
