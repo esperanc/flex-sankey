@@ -1,7 +1,7 @@
 {
   "name": "flex-sankey",
   "version": "0.1.0",
-  "description": "A flexible, modular Sankey diagram layout library with improved path geometry.",
+  "description": "A modular Sankey diagram layout library: simulated-annealing crossing reduction, spring-based node placement, and overlap-free ribbon geometry.",
   "type": "module",
   "license": "MIT",
   "author": "Claudio Esperan\u00e7a",
@@ -17,7 +17,10 @@
     "sugiyama",
     "layout",
     "visualization",
-    "d3"
+    "d3",
+    "simulated-annealing",
+    "crossing-minimization",
+    "force-directed"
   ],
   "sideEffects": false,
   "main": "./src/index.js",

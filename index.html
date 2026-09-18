@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>flex-sankey — modular Sankey diagram layout</title>
-<meta name="description" content="A flexible, modular Sankey diagram layout library for JavaScript, with a ribbon geometry that prevents parallel links from overlapping.">
+<meta name="description" content="A modular Sankey diagram layout library for JavaScript: crossing reduction by simulated annealing, node placement by a spring relaxation, and a ribbon geometry that keeps parallel links from overlapping.">
 <style>
 :root {
   --bg: #ffffff;
@@ -94,8 +94,9 @@ footer a { color: var(--muted); }
 <header class="hero">
   <h1>flex-sankey</h1>
   <p class="tagline">
-    A flexible, modular Sankey diagram layout library for JavaScript, with a
-    ribbon geometry that prevents parallel links from overlapping.
+    A modular Sankey diagram layout library for JavaScript. Crossing reduction
+    by simulated annealing, node placement by a spring relaxation, and a ribbon
+    geometry that keeps parallel links from overlapping.
   </p>
   <div class="links">
     <a class="primary" href="./demos/">Open the demos</a>
@@ -108,10 +109,37 @@ footer a { color: var(--muted); }
   Unlike most Sankey libraries, <code>flex-sankey</code> does not hide the layout
   behind a single entry point. Each stage of the pipeline is a separate function
   that can be tuned, inspected, or replaced between steps — which is what makes
-  it possible to do things like merge a horizontal and a vertical layout into one
-  hybrid diagram. The package has <strong>no runtime dependencies</strong> and
-  runs unchanged in Node.js and in the browser.
+  it possible to do things like reuse one diagram's node ordering to seed
+  another's, or merge a horizontal and a vertical layout into one hybrid figure.
+  The package has <strong>no runtime dependencies</strong> and runs unchanged in
+  Node.js and in the browser.
 </p>
+
+<p>Three pieces do the substantive work:</p>
+<ul>
+  <li>
+    <strong>Crossing reduction by local search.</strong> Ordering nodes to
+    minimise link crossings is NP-complete, so stage&nbsp;3 sweeps each layer
+    into the order suggested by its neighbour — by median or barycentre — then
+    refines with pairwise swaps accepted under a <strong>simulated-annealing</strong>
+    rule, so the search can climb out of local minima instead of stalling in
+    them.
+  </li>
+  <li>
+    <strong>Node placement by physical relaxation.</strong> Stage&nbsp;4 treats
+    nodes as masses sliding along their layer under three kinds of
+    <strong>spring</strong> — edge springs pulling connected nodes into
+    alignment, node springs holding a minimum separation, margin springs drawing
+    the extremes toward the boundary — each with its own stiffness, with hard
+    constraints applied after every step.
+  </li>
+  <li>
+    <strong>Overlap-free ribbon geometry.</strong> Each link is bounded by two
+    independent cubic Béziers whose control points derive from a reference line
+    joining the node centres, which makes adjacent parallel ribbons share their
+    boundary curve exactly.
+  </li>
+</ul>
 
 <div class="callout">
   <p>
@@ -191,8 +219,8 @@ const b = sankeyOrderNodes(
   <tbody>
     <tr><td>1. Layering</td><td><code>sankeyLayers</code></td><td>Assign nodes to layers</td></tr>
     <tr><td>2. Dummy nodes</td><td><code>sankeyAddDummies</code></td><td>Route multi-layer links through intermediate nodes</td></tr>
-    <tr><td>3. Ordering</td><td><code>sankeyOrderNodes</code></td><td>Combinatorial optimisation: minimise link crossings</td></tr>
-    <tr><td>4. Geometry</td><td><code>sankeyGeometricLayout</code></td><td>Geometric optimisation: assign coordinates</td></tr>
+    <tr><td>3. Ordering</td><td><code>sankeyOrderNodes</code></td><td>Combinatorial optimisation: median or barycentre sweep, refined by simulated-annealing swaps</td></tr>
+    <tr><td>4. Geometry</td><td><code>sankeyGeometricLayout</code></td><td>Geometric optimisation: coordinates settled by a 1D spring relaxation</td></tr>
     <tr><td>5. Render layout</td><td><code>sankeyRenderLayout</code></td><td>Resolve node boxes and path geometry</td></tr>
     <tr><td>6a. Scene</td><td><code>buildScene</code></td><td>Resolve shapes and positions — geometry only</td></tr>
     <tr><td>6b. Paint</td><td><code>paintScene</code></td><td>Apply colours, fonts and opacities</td></tr>
@@ -238,8 +266,8 @@ const b = sankeyOrderNodes(
   <a href="./demos/compare.html"><strong>Library comparison</strong><span>The same dataset under all three libraries</span></a>
   <a href="./demos/pipeline.html"><strong>The pipeline, stage by stage</strong><span>What each of the six stages adds</span></a>
   <a href="./demos/features.html"><strong>Design features</strong><span>Packed paths, totalizing nodes, hidden nodes</span></a>
-  <a href="./demos/ordering.html"><strong>Combinatorial optimisation</strong><span>Crossing reduction, with a convergence trace</span></a>
-  <a href="./demos/geometry.html"><strong>Geometric optimisation</strong><span>The spring system, drawn over the diagram</span></a>
+  <a href="./demos/ordering.html"><strong>Combinatorial optimisation</strong><span>Annealing against sequential swaps, with a convergence trace</span></a>
+  <a href="./demos/geometry.html"><strong>Geometric optimisation</strong><span>The three spring types, drawn over the diagram</span></a>
   <a href="./demos/styling.html"><strong>Styling and configuration</strong><span>Palettes, labels, orientation, PDF export</span></a>
   <a href="./demos/overlap.html"><strong>Measuring overlap</strong><span>The coverage buffer behind the metric</span></a>
   <a href="./demos/hybrid.html"><strong>Hybrid horizontal and vertical</strong><span>Two orientations merged into one figure</span></a>

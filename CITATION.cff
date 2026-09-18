@@ -24,8 +24,11 @@ repository-code: https://github.com/esperanc/flex-sankey
 license: MIT
 version: 0.1.0
 abstract: >-
-  A flexible, modular Sankey diagram layout library that separates the
-  combinatorial and geometric stages of layout optimisation and introduces a
+  A modular Sankey diagram layout library that separates the combinatorial and
+  geometric stages of layout optimisation. Link crossings are reduced by a
+  median or barycentre sweep refined with simulated-annealing swaps; node
+  coordinates are settled by a one-dimensional spring relaxation with separate
+  stiffnesses for edge, node and margin springs; and links are drawn with a
   ribbon geometry built from paired cubic Béziers, which eliminates overlap
   between parallel links.
 keywords:

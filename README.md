@@ -1,14 +1,32 @@
 # flex-sankey
 
-A flexible, modular Sankey diagram layout library for JavaScript, with an
-improved ribbon geometry that avoids the overlap and distortion common to
-Bézier-dilated Sankey paths.
+A modular Sankey diagram layout library for JavaScript: crossing reduction by
+simulated annealing, node placement by a spring relaxation, and a ribbon
+geometry that keeps parallel links from overlapping.
 
 Unlike most Sankey libraries, `flex-sankey` does not hide the layout behind a
 single entry point. Each stage of the pipeline is a separate function that can
 be tuned, inspected, or replaced between steps — which is what makes it
-possible to do things like merge a horizontal and a vertical layout into one
-hybrid diagram.
+possible to do things like reuse one diagram's node ordering to seed another's,
+or merge a horizontal and a vertical layout into one hybrid figure. The package
+has **no runtime dependencies** and runs unchanged in Node.js and the browser.
+
+Three pieces do the substantive work:
+
+- **Crossing reduction by local search.** Minimising link crossings is
+  NP-complete, so stage 3 sweeps each layer into the order suggested by its
+  neighbour — by median or barycentre — then refines with pairwise swaps
+  accepted under a **simulated-annealing** rule, so the search can climb out of
+  local minima instead of stalling in them.
+- **Node placement by physical relaxation.** Stage 4 treats nodes as masses
+  sliding along their layer under three kinds of **spring**: edge springs
+  pulling connected nodes into alignment, node springs holding a minimum
+  separation, and margin springs drawing the extremes toward the boundary. Each
+  has its own stiffness, and hard constraints are applied after every step.
+- **Overlap-free ribbon geometry.** Each link is bounded by two independent
+  cubic Béziers whose control points derive from a reference line joining the
+  node centres, which makes adjacent parallel ribbons share their boundary
+  curve exactly.
 
 **[Website and live demos](https://esperanc.github.io/flex-sankey/)**
 
@@ -85,8 +103,8 @@ ribbon breadth — unlike the outline construction, which returns a filled shape
 | --- | --- | --- |
 | 1. Layering | `sankeyLayers` | Assign nodes to layers |
 | 2. Dummy nodes | `sankeyAddDummies` | Route multi-layer links through intermediate nodes |
-| 3. Ordering | `sankeyOrderNodes` | Combinatorial optimisation: minimise link crossings |
-| 4. Geometry | `sankeyGeometricLayout` | Geometric optimisation: assign coordinates |
+| 3. Ordering | `sankeyOrderNodes` | Median or barycentre sweep, refined by simulated-annealing swaps |
+| 4. Geometry | `sankeyGeometricLayout` | Coordinates settled by a one-dimensional spring relaxation |
 | 5. Render layout | `sankeyRenderLayout` | Resolve node boxes and path geometry |
 | 6a. Scene | `buildScene` | Resolve shapes and positions — geometry only |
 | 6b. Paint | `paintScene` | Apply colours, fonts and opacities |
