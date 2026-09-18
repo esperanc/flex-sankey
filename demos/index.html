@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>flex-sankey demos</title>
+<link rel="stylesheet" href="./kit.css">
+</head>
+<body>
+<div class="gallery">
+  <h1>flex-sankey demos</h1>
+  <p>
+    A modular Sankey diagram layout library. Every demo runs the library's real
+    source modules straight from this server &mdash; there is no build step and
+    no bundle. Each is a single HTML file and one ES module.
+  </p>
+
+  <div class="cards">
+    <a class="card" href="./paths.html">
+      <h3>Ribbon geometry</h3>
+      <p>
+        The core construction. Parallel ribbons under each of the three
+        geometries, with overlap measured live. Try the <em>hard case</em>
+        preset.
+      </p>
+      <span class="tag">paths</span>
+    </a>
+
+    <a class="card" href="./compare.html">
+      <h3>Library comparison</h3>
+      <p>
+        The same dataset laid out by <code>d3-sankey</code>,
+        <code>d3-sankey-diagram</code> and this library, all measured by one
+        routine.
+      </p>
+      <span class="tag">benchmark</span>
+    </a>
+
+    <a class="card" href="./pipeline.html">
+      <h3>The pipeline, stage by stage</h3>
+      <p>
+        What each of the six stages adds, drawn from the intermediate
+        structures a monolithic implementation would keep private.
+      </p>
+      <span class="tag">architecture</span>
+    </a>
+
+    <a class="card" href="./features.html">
+      <h3>Design features</h3>
+      <p>
+        Packed paths, totalizing nodes and hidden nodes, and what each does to
+        the clutter. Drag a node; hover a ribbon.
+      </p>
+      <span class="tag">features</span>
+    </a>
+
+    <a class="card" href="./ordering.html">
+      <h3>Combinatorial optimisation</h3>
+      <p>
+        Crossing reduction: median against barycentre, annealing against
+        sequential swaps, with a convergence trace.
+      </p>
+      <span class="tag">stage 3</span>
+    </a>
+
+    <a class="card" href="./geometry.html">
+      <h3>Geometric optimisation</h3>
+      <p>
+        The spring system that settles coordinates, with the springs themselves
+        drawn over the diagram.
+      </p>
+      <span class="tag">stage 4</span>
+    </a>
+
+    <a class="card" href="./styling.html">
+      <h3>Styling and configuration</h3>
+      <p>
+        Palettes, ribbon colouring, labels, orientation &mdash; and a PDF
+        export. Repainting never lays the diagram out again.
+      </p>
+      <span class="tag">rendering</span>
+    </a>
+
+    <a class="card" href="./overlap.html">
+      <h3>Measuring overlap</h3>
+      <p>
+        The coverage buffer the overlap figure is computed from, shaded by how
+        many links cover each sample.
+      </p>
+      <span class="tag">metrics</span>
+    </a>
+
+    <a class="card" href="./hybrid.html">
+      <h3>Hybrid horizontal and vertical</h3>
+      <p>
+        An energy balance flowing left to right and its emissions flowing
+        bottom to top, merged into one figure.
+      </p>
+      <span class="tag">composition</span>
+    </a>
+  </div>
+
+  <p class="note" style="margin-top:26px">
+    Run these locally with <code>npm run demos</code>. Source:
+    <a href="https://github.com/esperanc/flex-sankey">github.com/esperanc/flex-sankey</a>.
+  </p>
+</div>
+</body>
+</html>

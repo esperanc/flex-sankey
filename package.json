@@ -32,6 +32,7 @@
   "files": [
     "src",
     "types",
+    "demos",
     "LICENSE",
     "README.md"
   ],
@@ -49,7 +50,8 @@
     "bench:verify": "node benchmarks/verify.js",
     "bench": "node benchmarks/run.js",
     "bench:charts": "node benchmarks/charts.js",
-    "bench:all": "npm run bench:data && npm run bench && npm run bench:charts"
+    "bench:all": "npm run bench:data && npm run bench && npm run bench:charts",
+    "demos": "node demos/serve.js"
   },
   "devDependencies": {
     "@types/node": "^26.6.1",

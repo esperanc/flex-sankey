@@ -16,13 +16,13 @@ import { fileURLToPath } from "node:url";
 
 import {
   sankeyLayers, sankeyAddDummies, sankeyOrderNodes,
-  sankeyGeometricLayout, sankeyRenderLayout
+  sankeyGeometricLayout, sankeyRenderLayout, combineRenderLayouts
 } from "../src/layout/index.js";
 import { buildScene } from "../src/render/scene.js";
-import { paintScene } from "../src/render/theme.js";
+import { paintScene, ordinalColorScale } from "../src/render/theme.js";
 import { sceneToPDF } from "../src/render/pdf.js";
 import { measureScene } from "../src/metrics/index.js";
-import { addTotalizingNodes } from "../src/data/synthetic.js";
+import { addTotalizingNodes, makeSyntheticSankeyData } from "../src/data/synthetic.js";
 import { energySumNodes, energyCategories, energyColors } from "../src/data/energy.js";
 import { randomLcg } from "../src/internal/random.js";
 
@@ -95,3 +95,90 @@ for (const { name, opts } of figures) {
       `boxes ${String(painted.nodes.length).padStart(3)}`
   );
 }
+
+// --- the hybrid figure ----------------------------------------------------
+// Two layouts in different orientations, merged. Kept here rather than in the
+// loop above because it is built from two datasets, not one.
+
+/** Sectors appearing in both halves; the merge hinges on these. */
+const SECTORS = [
+  "Power industry", "Buildings", "Transport",
+  "Industrial combustion", "Processes", "Fuel exploitation"
+];
+
+const hybridPalette = ordinalColorScale([
+  "#4c7d6f", "#69a493", "#6bceb3", "#90ebd2", "#233933", "#36594f",
+  "#970000", "#742d1c", "#371f16", "#c95757", "#ce7a7a", "#e59663",
+  "#e77e37", "#b18f17", "#f0b900", "#ffda14", "#ffdd68", "#444444",
+  "#2c0051", "#2b0099", "#4600fa", "#62a6ff", "#6e3cee", "#6e4cbb", "#5e00ae"
+]);
+
+/**
+ * @param {any} spec
+ * @param {number} seed
+ * @param {string[]} ranks
+ * @param {"horizontal"|"vertical"} flowDirection
+ */
+function halfLayout(spec, seed, ranks, flowDirection) {
+  const links = makeSyntheticSankeyData(spec, { randomSeed: seed, regularity: 0.1 });
+  const layout = sankeyAddDummies(sankeyLayers({ links, ranks }));
+  sankeyOrderNodes(layout, { nsteps: 30, random: randomLcg(2) });
+  const geometry = sankeyGeometricLayout(layout, { size: 380, minSep: 24 });
+  return sankeyRenderLayout(geometry, {
+    flowDirection, length: 380, marginLeft: 42, marginRight: 48
+  });
+}
+
+const hybrid = combineRenderLayouts(
+  halfLayout(
+    {
+      linkPairs: [
+        [["Coal", "Nat Gas", "Oil", "Other fossil"], ["From fossil"]],
+        [["Biofuel", "Hydro", "Nuclear", "Other renew.", "Solar", "Wind"], ["Clean energy"]],
+        [["Clean energy", "From fossil"],
+         ["Power industry", "Buildings", "Transport", "Industrial combustion"]],
+        [["From fossil"], ["Fuel exploitation", "Processes"]]
+      ],
+      sources: ["Biofuel", "Hydro", "Nuclear", "Other renew.", "Solar", "Wind",
+                "Coal", "Nat Gas", "Oil", "Other fossil"]
+    },
+    0.6,
+    ["From fossil", "Clean energy", ...SECTORS],
+    "horizontal"
+  ),
+  halfLayout(
+    {
+      linkPairs: [
+        [["Emissions"], [...SECTORS, "Agriculture", "LULUCF"]],
+        [["CO2", "CH4", "FGas", "N2O"], ["Emissions"]]
+      ],
+      sources: ["CO2", "CH4", "FGas", "N2O"]
+    },
+    0.8,
+    SECTORS,
+    "vertical"
+  )
+);
+
+const hybridScene = buildScene(hybrid, {
+  width: hybrid.length,
+  height: hybrid.breadth,
+  bias: 0.6,
+  nodeLabelPos: "top",
+  nodeLabelPadding: 4
+});
+writeFileSync(
+  join(outDir, "fig-hybrid.pdf"),
+  sceneToPDF(
+    paintScene(hybridScene, {
+      colorScale: hybridPalette, pathColor: "source-target",
+      pathOpacity: 0.55, nodeStrokeWidth: 0, labelFont: "11px sans-serif"
+    }),
+    { title: "hybrid", margin: 4 }
+  )
+);
+console.log(
+  `fig-hybrid.pdf   ${hybridScene.nodes.length} boxes, ` +
+    `${hybridScene.links.length} links, ` +
+    `${Math.round(hybrid.length)}x${Math.round(hybrid.breadth)}`
+);

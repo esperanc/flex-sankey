@@ -160,6 +160,31 @@ exactly `1` — the default — nothing is ever dropped, so varying only the see
 produces datasets that share a single topology and differ only in magnitudes.
 Set it below 1 to vary structure.
 
+## Demos
+
+Nine interactive demos covering the geometry, each pipeline stage, the design
+features, styling, and a live comparison against the two D3 implementations:
+
+```bash
+npm run demos       # then open http://localhost:8080/
+```
+
+They run the library's real source modules straight from the server — no build
+step, no bundle. Each is one HTML file and one ES module, so they double as
+worked examples.
+
+| Demo | What it shows |
+| --- | --- |
+| Ribbon geometry | The three constructions, with overlap measured live. Try the *hard case* preset. |
+| Library comparison | The same dataset under all three libraries, one measurement routine |
+| The pipeline, stage by stage | What each of the six stages adds |
+| Design features | Packed paths, totalizing nodes, hidden nodes |
+| Combinatorial optimisation | Crossing-reduction heuristics, with a convergence trace |
+| Geometric optimisation | The spring system, drawn over the diagram |
+| Styling and configuration | Palettes, labels, orientation, PDF export |
+| Measuring overlap | The coverage buffer the overlap figure comes from |
+| Hybrid horizontal and vertical | Two orientations merged into one figure |
+
 ## Development
 
 ```bash
@@ -169,7 +194,8 @@ npm run test:watch  # tests in watch mode
 npm run typecheck   # type checking only
 npm run types       # emit .d.ts files to types/
 npm run coverage    # tests with a coverage report
-npm run bench:data  # regenerate the benchmark datasets
+npm run demos       # serve the interactive demos
+npm run bench:all   # regenerate datasets, run the comparison, draw charts
 ```
 
 The source is plain JavaScript annotated with JSDoc, type-checked by TypeScript
