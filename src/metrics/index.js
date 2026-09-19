@@ -57,7 +57,9 @@ export { shapesFromScene, shapesFromPaths, thickenCentrelines } from "./shapes.j
  * @returns {DiagramMetrics}
  */
 export function measureShapes(shapes, { width, height, sampleScale = 2 }) {
-  const { crossings } = countCrossings(shapes.centrelines);
+  const { crossings } = countCrossings(shapes.centrelines, {
+    owner: shapes.centrelineOwner
+  });
   const totalLength = shapes.centrelines.reduce(
     (sum, line) => sum + polylineLength(line),
     0
@@ -76,7 +78,7 @@ export function measureShapes(shapes, { width, height, sampleScale = 2 }) {
     excessRatio: overlap.excessRatio,
     maxDepth: overlap.maxDepth,
     coveredPixels: overlap.covered,
-    linkCount: shapes.centrelines.length
+    linkCount: shapes.polygons.length
   };
 }
 
@@ -122,7 +124,18 @@ export function measurePaths(
     if (!strokeWidths) {
       throw new Error("measurePaths needs strokeWidths when filled is false");
     }
-    shapes.polygons = thickenCentrelines(shapes.centrelines, strokeWidths);
+    const widened = thickenCentrelines(
+      shapes.centrelines,
+      strokeWidths,
+      shapes.centrelineOwner
+    );
+    // Regroup by link: coverage counts links, not pieces, so the several
+    // pieces of one route must not register as overlapping one another.
+    const byLink = shapes.polygons.map(() => /** @type {any[]} */ ([]));
+    widened.forEach((polygons, i) => {
+      byLink[shapes.centrelineOwner[i]].push(...polygons);
+    });
+    shapes.polygons = byLink;
   }
   return measureShapes(shapes, { width, height, sampleScale });
 }

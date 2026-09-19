@@ -78,7 +78,9 @@ emits nor receives flow of its own, so each bundled link is split in two and
 carries the identity of its *original* endpoints. That provenance is threaded
 through dummy naming, the ordering stage's link filter, and render layout,
 where the two halves are grouped as one visual path — so a flow stays a single
-traceable ribbon, coloured by where it really came from.
+traceable ribbon, coloured by where it really came from. The effect is close
+to the edge bundling of NeatSankey, and like it, gathering the bundle is itself
+a crossing-reduction technique.
 
 **Hidden nodes.** Categories such as imports, exports and losses often carry
 little analytical interest yet dominate the crossing count. Declaring them
@@ -89,12 +91,10 @@ re-attached to the visible node they touch and drawn as a triangular marker
 with dashed rules conveying magnitude. On the energy example this cuts overlap
 roughly fivefold.
 
-One result worth knowing, visible in the [design features
-demo](demos/features.html): totalizing nodes *reduce* crossings counted between
-adjacent layers but *increase* them counted between the drawn ribbons, because
-splitting each link obliges the ribbons to fan in and out of the new node.
-Their benefit is in overlap and visual density, not in crossings as a reader
-sees them.
+On the energy example, visible in the [design features
+demo](demos/features.html), the two totalizing nodes roughly halve both the
+crossing count and the overlap, and hiding the incidental categories cuts
+overlap fivefold.
 
 ## Install
 

@@ -21,7 +21,12 @@ import { parsePath } from "./svg-path.js";
 /**
  * @typedef {object} DiagramShapes
  * @property {Point[][][]} polygons Per link, the closed polygons it covers.
- * @property {Point[][]} centrelines Per link, its centre line.
+ * @property {Point[][]} centrelines The drawn centre lines. A link normally
+ *   contributes one, but contributes several where its route is interrupted —
+ *   see `centrelineOwner`.
+ * @property {number[]} centrelineOwner The index of the link each centre line
+ *   belongs to. Two centre lines of the same link are not counted as crossing
+ *   each other.
  */
 
 /**
@@ -30,6 +35,37 @@ import { parsePath } from "./svg-path.js";
  * @returns {Point}
  */
 const pt = (p) => [p[0], p[1]];
+
+/** How close two points must be to count as the same point, in pixels. */
+const JOIN_TOLERANCE = 0.5;
+
+/**
+ * Appends a hop's centre line to a link's route.
+ *
+ * Consecutive hops usually meet, and are joined into one polyline. They do not
+ * meet at a totalizing node: a link enters at its incoming offset and leaves at
+ * its outgoing offset, which are different points on that node. Joining them
+ * anyway would draw a straight leap across the node's interior that no reader
+ * ever sees — the node is painted opaque over it — and those leaps would
+ * register as crossings with every other link passing through the same node.
+ * So the route is broken instead, and the pieces stay owned by the same link.
+ *
+ * @param {Point[][]} route Polylines accumulated for this link so far.
+ * @param {Point[]} hop The next hop's centre line.
+ */
+function appendHop(route, hop) {
+  if (hop.length === 0) return;
+  const current = route[route.length - 1];
+  if (current && current.length) {
+    const end = current[current.length - 1];
+    const start = hop[0];
+    if (Math.hypot(start[0] - end[0], start[1] - end[1]) <= JOIN_TOLERANCE) {
+      current.push(...hop.slice(1));
+      return;
+    }
+  }
+  route.push(hop.slice());
+}
 
 /**
  * Averages two polylines, giving the line midway between them.
@@ -140,12 +176,14 @@ export function shapesFromScene(scene, tolerance = 0.25) {
   const polygons = [];
   /** @type {Point[][]} */
   const centrelines = [];
+  /** @type {number[]} */
+  const centrelineOwner = [];
 
-  for (const link of scene.links) {
+  scene.links.forEach((link, index) => {
     /** @type {Point[][]} */
     const linkPolygons = [];
-    /** @type {Point[]} */
-    const centre = [];
+    /** @type {Point[][]} */
+    const route = [];
 
     for (const [lo, hi] of link.curves) {
       // Control points arrive as plain number arrays; narrow them to points.
@@ -155,16 +193,17 @@ export function shapesFromScene(scene, tolerance = 0.25) {
       const hiPts = [h0, ...flattenCubic(h0, h1, h2, h3, tolerance)];
       // The ribbon outline runs down one side and back up the other.
       linkPolygons.push([...loPts, ...hiPts.slice().reverse()]);
-      const mid = midline(loPts, hiPts);
-      // Successive hops share an endpoint; drop the duplicate.
-      centre.push(...(centre.length ? mid.slice(1) : mid));
+      appendHop(route, midline(loPts, hiPts));
     }
 
     polygons.push(linkPolygons);
-    centrelines.push(centre);
-  }
+    for (const line of route) {
+      centrelines.push(line);
+      centrelineOwner.push(index);
+    }
+  });
 
-  return { polygons, centrelines };
+  return { polygons, centrelines, centrelineOwner };
 }
 
 /**
@@ -183,36 +222,48 @@ export function shapesFromPaths(pathData, { filled = true, tolerance = 0.25 } = 
   const polygons = [];
   /** @type {Point[][]} */
   const centrelines = [];
+  /** @type {number[]} */
+  const centrelineOwner = [];
 
   for (const d of pathData) {
     const subpaths = parsePath(d, tolerance);
     if (!subpaths.length) continue;
 
+    const index = polygons.length;
+
     if (!filled) {
       // A stroked path is already its own centre line, and covers no area we
       // can measure without knowing the stroke width.
       polygons.push([]);
-      centrelines.push(subpaths.flatMap((s) => s.points));
+      /** @type {Point[][]} */
+      const strokeRoute = [];
+      for (const sub of subpaths) appendHop(strokeRoute, sub.points);
+      for (const line of strokeRoute) {
+        centrelines.push(line);
+        centrelineOwner.push(index);
+      }
       continue;
     }
 
     /** @type {Point[][]} */
     const linkPolygons = [];
-    /** @type {Point[]} */
-    const centre = [];
+    /** @type {Point[][]} */
+    const route = [];
     for (const sub of subpaths) {
       linkPolygons.push(sub.points);
       // A closed ribbon outline runs out along one side and back along the
       // other; averaging the two recovers the centre line.
       const [sideA, sideB] = splitOutline(sub.points);
-      const mid = midline(sideA, sideB);
-      centre.push(...(centre.length ? mid.slice(1) : mid));
+      appendHop(route, midline(sideA, sideB));
     }
     polygons.push(linkPolygons);
-    centrelines.push(centre);
+    for (const line of route) {
+      centrelines.push(line);
+      centrelineOwner.push(index);
+    }
   }
 
-  return { polygons, centrelines };
+  return { polygons, centrelines, centrelineOwner };
 }
 
 /**
@@ -220,12 +271,14 @@ export function shapesFromPaths(pathData, { filled = true, tolerance = 0.25 } = 
  * links can still be measured for overlap.
  *
  * @param {Point[][]} centrelines
- * @param {number[]} widths Ribbon breadth per link.
- * @returns {Point[][][]} Per link, one closed polygon.
+ * @param {number[]} widths Ribbon breadth, indexed by link.
+ * @param {number[]} [owner] The link each centre line belongs to, where a
+ *   link contributes more than one.
+ * @returns {Point[][][]} One closed polygon per centre line.
  */
-export function thickenCentrelines(centrelines, widths) {
+export function thickenCentrelines(centrelines, widths, owner) {
   return centrelines.map((line, i) => {
-    const half = (widths[i] ?? 1) / 2;
+    const half = (widths[owner ? owner[i] : i] ?? 1) / 2;
     if (line.length < 2) return [];
     /** @type {Point[]} */
     const left = [];

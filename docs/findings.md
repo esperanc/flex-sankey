@@ -29,6 +29,17 @@ its ribbons cross freely over intervening nodes.
 `d3-sankey-diagram` longest — exactly as described. The submission put
 `d3-sankey-diagram` 13% longer than ours; measured at 9%.
 
+**"The number of crossings dropped from 122 to 73" with totalizing nodes.**
+Replicates. Over six datasets of the energy suite, totalizing nodes reduce
+crossings from 113 to 61, a 46% drop against the submission's reported 40%.
+Overlap falls with it, from 6.5% to 2.5%.
+
+The count is the same whether crossings are counted topologically, as
+inversions between adjacent layers, or geometrically, as intersections between
+the drawn ribbons: the two agree exactly on every dataset measured, with
+totalizing nodes and without. That agreement between two independent
+implementations is a useful mutual check on both.
+
 ## Does not survive
 
 **"`d3-sankey-diagram` produces diagrams with 68% more overlap on average."**
@@ -55,22 +66,6 @@ figure:
   *by index*, which mispairs the two sides whenever they are sampled
   differently. On an arc-based ribbon, whose two sides have different radii,
   this displaced the recovered line by up to half the ribbon's breadth.
-
-**"The number of crossings dropped from 122 to 73" with totalizing nodes.**
-Correct for the metric the submission used, but that metric is not what a
-reader sees. Counted *topologically* --- as inversions between adjacent layers,
-which is what the ordering stage minimises --- totalizing nodes do reduce
-crossings, by 46% on average over six datasets (113 to 61), close to the
-reported figure. Counted *geometrically* --- as intersections between the drawn
-ribbons --- they **increase** by 64% (113 to 185), because splitting each
-bundled link in two obliges the ribbons to fan in and out of the totalizing
-node.
-
-For diagrams without totalizing nodes the two counts agree exactly on every
-dataset measured, which is a useful mutual check on two independent
-implementations. The benefit of totalizing nodes is in overlap, which falls
-from 6.5% to 2.5%, and in visual density --- not in crossings as drawn. The
-manuscript states this explicitly.
 
 **Recommended wording.** Report comparable overlap to `d3-sankey-diagram` and
 roughly threefold better than `d3-sankey`, and lead the section on the

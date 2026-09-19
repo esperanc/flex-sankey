@@ -32,8 +32,8 @@ import {
   sankeyGeometricLayout,
   sankeyRenderLayout
 } from "../src/layout/index.js";
-import { makeSyntheticSankeyData } from "../src/data/synthetic.js";
-import { energySpec } from "../src/data/energy.js";
+import { makeSyntheticSankeyData, addTotalizingNodes } from "../src/data/synthetic.js";
+import { energySpec, energySumNodes } from "../src/data/energy.js";
 import { randomLcg } from "../src/internal/random.js";
 
 /**
@@ -428,6 +428,74 @@ describe("measureScene", () => {
     const coarse = measureScene(scene, { sampleScale: 1 });
     const fine = measureScene(scene, { sampleScale: 4 });
     expect(fine.overlapRatio).toBeCloseTo(coarse.overlapRatio, 1);
+  });
+});
+
+describe("routes broken at a totalizing node", () => {
+  // A link gathered by a totalizing node enters at its incoming offset and
+  // leaves at its outgoing offset, which are different points on that node.
+  // Joining the two hops into one polyline would draw a leap across the node's
+  // interior that no reader ever sees, since the node is painted opaque over
+  // it — and those leaps would register as crossings with every other link
+  // through the same node, making totalizing nodes appear to *raise* the
+  // crossing count when they sharply lower it.
+  const links = makeSyntheticSankeyData(energySpec, {
+    randomSeed: 0,
+    regularity: 0.1,
+    optionalProbability: 0.8
+  });
+
+  /** @param {any[]} data */
+  const analyse = (data) => {
+    const layout = sankeyAddDummies(sankeyLayers({ links: data }));
+    const ordered = sankeyOrderNodes(layout, { nsteps: 60, random: randomLcg(4) });
+    const geometry = sankeyGeometricLayout(ordered, {
+      size: 300, whitespace: 0.32, joinDummies: true
+    });
+    const scene = buildScene(sankeyRenderLayout(geometry, { length: 560 }), {
+      width: 560, height: 300
+    });
+    return {
+      topological: ordered.crossings,
+      geometric: measureScene(scene, { sampleScale: 1 }).crossings,
+      shapes: shapesFromScene(scene)
+    };
+  };
+
+  const plain = analyse(links);
+  const totalizing = analyse(addTotalizingNodes(links, energySumNodes));
+
+  it("leaves no leap across a node's interior", () => {
+    for (const shapes of [plain.shapes, totalizing.shapes]) {
+      for (const line of shapes.centrelines) {
+        for (let i = 1; i < line.length; i++) {
+          const step = Math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1]);
+          expect(step).toBeLessThan(8);
+        }
+      }
+    }
+  });
+
+  it("splits a gathered link's route into pieces owned by that link", () => {
+    expect(totalizing.shapes.centrelines.length).toBeGreaterThan(
+      totalizing.shapes.polygons.length
+    );
+    expect(totalizing.shapes.centrelineOwner).toHaveLength(
+      totalizing.shapes.centrelines.length
+    );
+    for (const owner of totalizing.shapes.centrelineOwner) {
+      expect(owner).toBeLessThan(totalizing.shapes.polygons.length);
+    }
+  });
+
+  it("agrees with the topological count, with totalizing nodes and without", () => {
+    // Two independent implementations reaching the same integer.
+    expect(plain.geometric).toBe(plain.topological);
+    expect(totalizing.geometric).toBe(totalizing.topological);
+  });
+
+  it("finds that totalizing nodes reduce crossings", () => {
+    expect(totalizing.geometric).toBeLessThan(plain.geometric);
   });
 });
 

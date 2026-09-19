@@ -56,16 +56,21 @@ function properIntersection(a, b, c, d) {
  * leave at their right, so only segments whose x ranges overlap are ever
  * tested against one another.
  *
- * @param {Point[][]} centrelines One polyline per link.
+ * @param {Point[][]} centrelines The drawn centre lines.
  * @param {object} [options]
  * @param {boolean} [options.collect=false] Also return each crossing point,
  *   which is useful for drawing a diagnostic overlay.
+ * @param {number[]} [options.owner] The link each centre line belongs to.
+ *   Defaults to one link per centre line. Supply it where a link's route is
+ *   broken into several pieces — at a totalizing node, for instance — so the
+ *   pieces are not counted as crossing one another.
  * @returns {{ crossings: number, points: Crossing[] }}
  */
-export function countCrossings(centrelines, { collect = false } = {}) {
+export function countCrossings(centrelines, { collect = false, owner } = {}) {
   /** @type {{ a: Point, b: Point, link: number, minX: number, maxX: number }[]} */
   const segments = [];
-  centrelines.forEach((line, link) => {
+  centrelines.forEach((line, i0) => {
+    const link = owner ? owner[i0] : i0;
     for (let i = 1; i < line.length; i++) {
       const a = line[i - 1];
       const b = line[i];

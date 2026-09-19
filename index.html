@@ -220,7 +220,8 @@ footer a { color: var(--muted); }
   naming, the ordering stage's link filter, and render layout, where the two
   halves are grouped as one visual path — so a flow stays a single traceable
   ribbon, coloured by where it really came from rather than by the node it
-  passes through.
+  passes through. The effect is close to the edge bundling of NeatSankey, and
+  like it, gathering the bundle is itself a crossing-reduction technique.
 </p>
 
 <h3>Hidden nodes</h3>
@@ -236,11 +237,9 @@ footer a { color: var(--muted); }
 
 <p>
   The <a href="./demos/features.html">design features demo</a> switches each on
-  and off against live measurements. One result worth knowing: totalizing nodes
-  <em>reduce</em> crossings counted between adjacent layers but <em>increase</em>
-  them counted between the drawn ribbons, because splitting each link obliges
-  the ribbons to fan in and out of the new node. Their benefit is in overlap and
-  visual density, not in crossings as a reader sees them.
+  and off against live measurements. On the energy example the two totalizing
+  nodes roughly halve both the crossing count and the overlap, and hiding the
+  incidental categories cuts overlap fivefold.
 </p>
 
 <h2 id="install">Install</h2>

@@ -42,10 +42,11 @@ note(
   "It only changes the drawing, never the ordering — watch the crossing count " +
   "stay put while the box count halves.<br><br>" +
   "<strong>Totalizing nodes</strong> gather a bundle of links into an " +
-  "intermediate node. They cut overlap sharply, but note that they " +
-  "<em>raise</em> the geometric crossing count: splitting each link in two " +
-  "obliges the ribbons to fan in and out of the new node. Their benefit is in " +
-  "overlap and density, not in crossings.<br><br>" +
+  "intermediate node that collects and redistributes them, in the manner of " +
+  "edge bundling. They cut crossings and overlap together \u2014 on the energy " +
+  "example, both roughly by half. The two crossing counts in the readout are " +
+  "measured independently, one between adjacent layers and one between the " +
+  "drawn ribbons; they should agree.<br><br>" +
   "<strong>Hidden nodes</strong> drop the incidental categories — here " +
   "imports, exports and losses — from the layout entirely, showing their flows " +
   "as triangular markers with dashed rules conveying magnitude."
