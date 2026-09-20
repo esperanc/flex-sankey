@@ -16,7 +16,7 @@ import {
 } from "../src/layout/index.js";
 import { buildScene } from "../src/render/scene.js";
 import { paintScene, ordinalColorScale } from "../src/render/theme.js";
-import { sceneToSVG } from "../src/render/svg.js";
+import { sceneToDOM } from "../src/render/dom.js";
 import { makeSyntheticSankeyData } from "../src/data/synthetic.js";
 import { randomLcg } from "../src/internal/random.js";
 
@@ -150,7 +150,8 @@ function render() {
   });
 
   const wrap = document.createElement("div");
-  wrap.innerHTML = sceneToSVG(painted, { titles: false });
+
+  wrap.appendChild(sceneToDOM(painted, { interactive: true }));
   show(host, wrap);
 
   const shared = new Set(scene.nodes.map((n) => n.key).filter((k) => SECTORS.includes(k)));

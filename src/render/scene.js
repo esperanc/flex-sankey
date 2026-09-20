@@ -53,6 +53,10 @@ import { labelAlignment, resolveLabelPos } from "./labels.js";
 /**
  * @typedef {object} SceneNode
  * @property {string} key
+ * @property {any} [box] The layout box this node was drawn from. Moving it and
+ *   calling `refreshNode` repositions the node; the links attached to the same
+ *   box follow once `refreshLink` is called for them. Non-enumerable, so it
+ *   does not appear when the scene is serialized.
  * @property {number} x
  * @property {number} y
  * @property {number} width
@@ -65,6 +69,9 @@ import { labelAlignment, resolveLabelPos } from "./labels.js";
 
 /**
  * @typedef {object} SceneLink
+ * @property {any[]} segments Box-relative geometry, one entry per hop, kept so
+ *   the ribbon can be re-routed when a box moves. Non-enumerable, so it does
+ *   not appear when the scene is serialized.
  * @property {string} sourceKey
  * @property {string} targetKey
  * @property {number} value
@@ -83,6 +90,10 @@ import { labelAlignment, resolveLabelPos } from "./labels.js";
  * @property {number} height
  * @property {SceneNode[]} nodes
  * @property {SceneLink[]} links
+ * @property {{bias: number, maxAngle: number, nodeLabel: (node: any) => string,
+ *   nodeLabelPos: any, nodeLabelAngle: number, nodeLabelPadding: number,
+ *   hiddenSymbolSize: number}} options The settings the scene was built with,
+ *   needed to rebuild geometry after a node moves.
  */
 
 /**
@@ -150,7 +161,8 @@ export function buildScene(
       };
     }
 
-    nodes.push({
+    /** @type {SceneNode} */
+    const sceneNode = {
       key: node.key,
       x: box.x,
       y: box.y,
@@ -169,48 +181,135 @@ export function buildScene(
             })
           )
         : []
+    };
+    // The layout box is plumbing, not scene data: it is held so geometry can be
+    // rebuilt when a node moves, but it links back into the layout graph and
+    // would make the scene unserializable. Keeping it non-enumerable preserves
+    // the promise that a scene is a flat, serializable description.
+    Object.defineProperty(sceneNode, "box", {
+      value: box, enumerable: false, writable: true
     });
+    nodes.push(sceneNode);
   }
 
   /** @type {SceneLink[]} */
   const links = [];
   for (const group of pathGroups) {
-    let d = "";
-    /** @type {import("../paths/outline.js").CubicBezier[][]} */
-    const curves = [];
-    /** @type {[number, number]} */
-    let tangent = [1, 0];
+    // Hold on to each hop's box-relative geometry. The boxes are the same
+    // objects the layout produced, so moving one and calling `refreshLink`
+    // re-routes every ribbon attached to it — which is what makes dragging a
+    // node drag its flows along with it.
+    const segments = group.paths.map((path) => ({
+      srcBox: path.srcBox,
+      dstBox: path.dstBox,
+      dx0: path.dx0, dy0: path.dy0, dx1: path.dx1, dy1: path.dy1,
+      tx0: path.tx0, ty0: path.ty0, tx1: path.tx1, ty1: path.ty1,
+      px0: path.px0, py0: path.py0, px1: path.px1, py1: path.py1,
+      size: Math.max(path.link.size, 1)
+    }));
 
-    for (const path of group.paths) {
-      const { link, srcBox, dstBox, dx0, dy0, dx1, dy1 } = path;
-      const { tx0, ty0, tx1, ty1, px0, py0, px1, py1 } = path;
-      const a = /** @type {[number, number]} */ ([srcBox.x + dx0, srcBox.y + dy0]);
-      const b = /** @type {[number, number]} */ ([dstBox.x + dx1, dstBox.y + dy1]);
-      // Tangent length is half the gap between the boxes, along whichever axis
-      // the flow runs, scaled by the curviness bias.
-      const tsize = ((tx0 > ty0 ? b[0] - a[0] : b[1] - a[1]) / 2) * bias;
-      const at = /** @type {[number, number]} */ ([tx0 * tsize, ty0 * tsize]);
-      const bt = /** @type {[number, number]} */ ([tx1 * tsize, ty1 * tsize]);
-      const ap = /** @type {[number, number]} */ ([srcBox.x + px0, srcBox.y + py0]);
-      const bp = /** @type {[number, number]} */ ([dstBox.x + px1, dstBox.y + py1]);
-      const size = Math.max(link.size, 1);
-      const spec = { a, b, at, bt, ap, bp, size, maxAngle };
-      d += outlinePath(spec);
-      curves.push(outlinePathPoints(spec));
-      tangent = [tx0, ty0];
-    }
-
-    links.push({
+    /** @type {SceneLink} */
+    const sceneLink = /** @type {any} */ ({
       sourceKey: group.sourceNode.key,
       targetKey: group.targetNode.key,
       value: group.link.value,
-      d,
-      curves,
-      tangent
+      d: "",
+      curves: [],
+      tangent: segments.length ? [segments[0].tx0, segments[0].ty0] : [1, 0]
+    });
+    // Non-enumerable for the same reason as `box` above.
+    Object.defineProperty(sceneLink, "segments", {
+      value: segments, enumerable: false, writable: true
+    });
+    links.push(sceneLink);
+  }
+
+  const scene = {
+    width,
+    height,
+    nodes,
+    links,
+    options: {
+      bias,
+      maxAngle,
+      nodeLabel,
+      nodeLabelPos,
+      nodeLabelAngle,
+      nodeLabelPadding,
+      hiddenSymbolSize
+    }
+  };
+  for (const link of links) refreshLink(link, scene.options);
+  return scene;
+}
+
+/**
+ * Recomputes a link's drawn geometry from the current position of the boxes it
+ * connects.
+ *
+ * Called once when the scene is built, and again whenever a node moves.
+ *
+ * @param {SceneLink} link
+ * @param {Scene["options"]} options
+ */
+export function refreshLink(link, options) {
+  let d = "";
+  /** @type {import("../paths/outline.js").CubicBezier[][]} */
+  const curves = [];
+  for (const seg of link.segments) {
+    const { srcBox, dstBox } = seg;
+    const a = /** @type {[number, number]} */ ([srcBox.x + seg.dx0, srcBox.y + seg.dy0]);
+    const b = /** @type {[number, number]} */ ([dstBox.x + seg.dx1, dstBox.y + seg.dy1]);
+    // Tangent length is half the gap between the boxes, along whichever axis
+    // the flow runs, scaled by the curviness bias.
+    const tsize = ((seg.tx0 > seg.ty0 ? b[0] - a[0] : b[1] - a[1]) / 2) * options.bias;
+    const at = /** @type {[number, number]} */ ([seg.tx0 * tsize, seg.ty0 * tsize]);
+    const bt = /** @type {[number, number]} */ ([seg.tx1 * tsize, seg.ty1 * tsize]);
+    const ap = /** @type {[number, number]} */ ([srcBox.x + seg.px0, srcBox.y + seg.py0]);
+    const bp = /** @type {[number, number]} */ ([dstBox.x + seg.px1, dstBox.y + seg.py1]);
+    const spec = { a, b, at, bt, ap, bp, size: seg.size, maxAngle: options.maxAngle };
+    d += outlinePath(spec);
+    curves.push(outlinePathPoints(spec));
+  }
+  link.d = d;
+  link.curves = curves;
+}
+
+/**
+ * Recomputes a node's drawn geometry from the current position of its box,
+ * including its label and any hidden-flow markers.
+ *
+ * @param {SceneNode} node
+ * @param {Scene} scene
+ */
+export function refreshNode(node, scene) {
+  const box = node.box;
+  if (!box) return;
+  node.x = box.x;
+  node.y = box.y;
+
+  const o = scene.options;
+  if (node.label) {
+    const source = box.vertex.nodes[0];
+    const pos = resolveLabelPos(o.nodeLabelPos, box, source, scene.width, scene.height);
+    const { anchor, baseline, dx, dy } = labelAlignment(
+      pos, o.nodeLabelAngle, box.width, box.height, o.nodeLabelPadding
+    );
+    Object.assign(node.label, {
+      x: box.x + dx, y: box.y + dy, anchor, baseline, angle: o.nodeLabelAngle
     });
   }
 
-  return { width, height, nodes, links };
+  if (box.hiddenPaths) {
+    node.hiddenMarks = box.hiddenPaths.map((/** @type {any} */ hp) =>
+      buildHiddenMark(hp, box, {
+        hiddenSymbolSize: o.hiddenSymbolSize,
+        nodeLabel: o.nodeLabel,
+        nodeLabelAngle: o.nodeLabelAngle,
+        nodeLabelPadding: o.nodeLabelPadding
+      })
+    );
+  }
 }
 
 /**

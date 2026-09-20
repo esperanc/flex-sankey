@@ -111,6 +111,9 @@ export function ordinalColorScale(range = schemeCategory10) {
  * @property {PaintedLink[]} links
  * @property {Required<Pick<Theme, "labelFont" | "labelColor" | "labelFilter" | "pathOpacity" | "nodeStroke">>} style
  *   Values needed again at draw time, for hover states and shared attributes.
+ * @property {import("./scene.js").Scene} [source] The scene this was painted
+ *   from. Non-enumerable; used by the DOM backend to rebuild geometry when a
+ *   node is dragged.
  */
 
 /** Formats a number to two decimal places. */
@@ -195,7 +198,7 @@ export function paintScene(scene, theme = {}) {
     title: pathTitle(geometry.sourceKey, geometry.targetKey, geometry.value)
   }));
 
-  return {
+  const painted = {
     width: scene.width,
     height: scene.height,
     gradients,
@@ -203,4 +206,11 @@ export function paintScene(scene, theme = {}) {
     links,
     style: { labelFont, labelColor, labelFilter, pathOpacity, nodeStroke }
   };
+  // The geometric scene this was painted from. Interactive rendering rebuilds
+  // geometry through it when a node is dragged. Non-enumerable so a painted
+  // scene stays as serializable as the scene it came from.
+  Object.defineProperty(painted, "source", {
+    value: scene, enumerable: false, writable: false
+  });
+  return painted;
 }

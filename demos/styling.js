@@ -16,7 +16,7 @@ import {
 } from "../src/layout/index.js";
 import { buildScene } from "../src/render/scene.js";
 import { paintScene, ordinalColorScale, schemeCategory10 } from "../src/render/theme.js";
-import { sceneToSVG } from "../src/render/svg.js";
+import { sceneToDOM } from "../src/render/dom.js";
 import { sceneToPDF } from "../src/render/pdf.js";
 import { randomLcg } from "../src/internal/random.js";
 
@@ -155,7 +155,8 @@ function render() {
   lastPainted = painted;
 
   const wrap = document.createElement("div");
-  wrap.innerHTML = sceneToSVG(painted, { titles: false });
+
+  wrap.appendChild(sceneToDOM(painted, { interactive: true }));
   show(host, wrap);
 
   setMetrics({

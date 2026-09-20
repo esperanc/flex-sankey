@@ -15,7 +15,7 @@ import {
 } from "../src/layout/index.js";
 import { buildScene } from "../src/render/scene.js";
 import { paintScene } from "../src/render/theme.js";
-import { sceneToSVG } from "../src/render/svg.js";
+import { sceneToDOM } from "../src/render/dom.js";
 import { randomLcg } from "../src/internal/random.js";
 
 const W = 700;
@@ -266,7 +266,7 @@ function render() {
     pathOpacity: 0.55, nodeStrokeWidth: 0.5, labelFont: "10px sans-serif"
   });
   const wrap = document.createElement("div");
-  wrap.innerHTML = sceneToSVG(painted, { titles: false });
+  wrap.appendChild(sceneToDOM(painted, { interactive: true }));
   show(host, wrap);
   setMetrics({
     crossings: ordered.crossings,

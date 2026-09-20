@@ -17,7 +17,7 @@ import {
 } from "../src/layout/index.js";
 import { buildScene } from "../src/render/scene.js";
 import { paintScene } from "../src/render/theme.js";
-import { sceneToSVG } from "../src/render/svg.js";
+import { sceneToDOM } from "../src/render/dom.js";
 import { randomLcg } from "../src/internal/random.js";
 
 const W = 660;
@@ -164,7 +164,7 @@ function render() {
     pathOpacity: 0.5, nodeStrokeWidth: 0.4, labelFont: "9px sans-serif"
   });
   const wrap = document.createElement("div");
-  wrap.innerHTML = sceneToSVG(painted, { titles: false });
+  wrap.appendChild(sceneToDOM(painted, { interactive: true }));
   show(host, wrap);
   show(chartHost, chart(ordered.history, Number(v.nsteps)));
 

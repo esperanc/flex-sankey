@@ -17,7 +17,7 @@
  * Copyright (c) 2026 Claudio Esperança and contributors
  */
 
-export { buildScene } from "./scene.js";
+export { buildScene, refreshLink, refreshNode } from "./scene.js";
 export { paintScene, ordinalColorScale, schemeCategory10 } from "./theme.js";
 export { sceneToSVG } from "./svg.js";
 export { sceneToPDF } from "./pdf.js";

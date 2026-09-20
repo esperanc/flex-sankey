@@ -120,6 +120,24 @@ numbers, so results must be regenerated.
   exactly at any margin, and nodes stay inside it. This changes every layout
   that uses a non-zero margin, which is the default.
 
+### Fixed (interaction)
+
+- **Dragging a node left its ribbons behind.** The DOM backend moved only the
+  node's own group, so the flows attached to it stayed where they were and the
+  node detached from its own links. The scene now retains each ribbon's
+  box-relative geometry, and `refreshLink` / `refreshNode` rebuild the drawn
+  geometry from the current box positions, so dragging re-routes every ribbon
+  touching the node. Its label and any hidden-flow markers move with it too.
+- **Dragging tracked the pointer at the wrong rate.** Pointer deltas were
+  applied as SVG user units, but they arrive in CSS pixels, and a responsive
+  stylesheet usually displays the diagram at some other scale. At the demos'
+  default width a node lagged the cursor by about a quarter of the distance
+  dragged. Coordinates are now converted through the SVG's own screen matrix,
+  so a node stays under the pointer at any scale or zoom.
+- **A failed pointer capture aborted the drag.** `setPointerCapture` throws for
+  a pointer the element never saw; the call is now guarded, since capture is a
+  refinement rather than a requirement.
+
 ### Changed (rendering)
 
 - **d3 is no longer a runtime dependency.** The layout used `d3-array`,

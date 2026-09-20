@@ -15,7 +15,7 @@ import {
 } from "../src/layout/index.js";
 import { buildScene } from "../src/render/scene.js";
 import { paintScene } from "../src/render/theme.js";
-import { sceneToSVG } from "../src/render/svg.js";
+import { sceneToDOM } from "../src/render/dom.js";
 import { measureScene } from "../src/metrics/index.js";
 import { randomLcg } from "../src/internal/random.js";
 
@@ -115,10 +115,12 @@ function render() {
   });
 
   const wrap = document.createElement("div");
-  wrap.innerHTML = v.ribbons
-    ? sceneToSVG(painted, { titles: false })
-    : `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"></svg>`;
-  const svg = wrap.querySelector("svg");
+  // With ribbons hidden the spring overlay needs a bare canvas of the same
+  // size to draw into.
+  const svg = v.ribbons
+    ? sceneToDOM(painted, { interactive: true })
+    : el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}` });
+  wrap.appendChild(svg);
 
   if (v.springs && svg) {
     // Layer coordinate for each vertex, taken from the boxes already placed.

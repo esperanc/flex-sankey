@@ -15,6 +15,8 @@
  * Copyright (c) 2026 Claudio Esperança and contributors
  */
 
+import { refreshLink, refreshNode } from "./scene.js";
+
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /**
@@ -136,7 +138,7 @@ export function sceneToDOM(scene, { document: doc, svg, interactive = true } = {
 
   const nodeGroup = el(doc, "g", { class: "nodes" });
   const labelGroup = el(doc, "g", { class: "labels" });
-  /** @type {{ group: SVGElement, key: string }[]} */
+  /** @type {{ group: SVGElement, label: SVGElement|null, node: any }[]} */
   const nodeEls = [];
 
   for (const node of nodes) {
@@ -187,33 +189,59 @@ export function sceneToDOM(scene, { document: doc, svg, interactive = true } = {
     }
 
     nodeGroup.appendChild(group);
-    nodeEls.push({ group, key: g.key });
 
+    let labelEl = null;
     if (node.label) {
-      labelGroup.appendChild(textEl(doc, node.label.label, node.label.fill, style));
+      labelEl = textEl(doc, node.label.label, node.label.fill, style);
+      labelGroup.appendChild(labelEl);
     }
+    nodeEls.push({ group, label: labelEl, node });
   }
 
   root.appendChild(nodeGroup);
   root.appendChild(labelGroup);
 
-  if (interactive) attachInteraction(root, linkEls, nodeEls, style);
+  if (interactive) attachInteraction(root, scene, linkEls, nodeEls);
   return root;
+}
+
+/**
+ * Converts a point in client (CSS pixel) coordinates into the SVG's own user
+ * coordinates.
+ *
+ * These differ whenever the SVG is displayed at anything other than its
+ * intrinsic size — which is the normal case, since a responsive stylesheet
+ * usually scales it to the container. Dragging with raw client deltas moves a
+ * node at the wrong rate, and visibly lags or outruns the pointer.
+ *
+ * @param {SVGSVGElement} svg
+ * @param {number} clientX
+ * @param {number} clientY
+ * @returns {{x: number, y: number}}
+ */
+function toUserSpace(svg, clientX, clientY) {
+  const ctm = svg.getScreenCTM?.();
+  if (!ctm) return { x: clientX, y: clientY };
+  const inverse = ctm.inverse();
+  const x = inverse.a * clientX + inverse.c * clientY + inverse.e;
+  const y = inverse.b * clientX + inverse.d * clientY + inverse.f;
+  return { x, y };
 }
 
 /**
  * Adds hover highlighting and node dragging.
  *
- * Dragging moves a node's rectangle only; the ribbons are not re-routed, since
- * re-running the layout mid-drag would be both expensive and disorienting.
- * Highlighting on hover is what makes a dense diagram readable.
+ * Dragging moves the node's box and then re-routes every ribbon attached to
+ * it, so the flows follow the node rather than detaching from it. The node's
+ * label and any hidden-flow markers move with it too.
  *
  * @param {SVGSVGElement} root
+ * @param {import("./theme.js").PaintedScene} scene
  * @param {{ element: SVGElement, sourceKey: string, targetKey: string }[]} linkEls
- * @param {{ group: SVGElement, key: string }[]} nodeEls
- * @param {PaintedScene["style"]} style
+ * @param {{ group: SVGElement, label: SVGElement|null, node: any }[]} nodeEls
  */
-function attachInteraction(root, linkEls, nodeEls, style) {
+function attachInteraction(root, scene, linkEls, nodeEls) {
+  const style = scene.style;
   const base = style.pathOpacity;
 
   /** @param {string|null} key Highlight links touching `key`; null resets. */
@@ -233,38 +261,83 @@ function attachInteraction(root, linkEls, nodeEls, style) {
     );
   }
 
-  for (const { group, key } of nodeEls) {
+  for (const entry of nodeEls) {
+    const { group, label, node } = entry;
+    const geometry = node.geometry;
+    const box = geometry.box;
+    if (!box) continue;
+
     group.style.cursor = "grab";
-    group.addEventListener("mouseenter", () => highlight(key));
+    group.addEventListener("mouseenter", () => highlight(geometry.key));
     group.addEventListener("mouseleave", () => highlight(null));
 
+    // Ribbons that touch this node, and therefore have to be re-routed while
+    // it moves. Computed once per node rather than on every pointer event.
+    const attached = scene.links.filter(
+      (l) =>
+        l.geometry.sourceKey === geometry.key || l.geometry.targetKey === geometry.key
+    );
+    const attachedEls = attached.map(
+      (l) => linkEls[scene.links.indexOf(l)]?.element
+    );
+
     let dragging = false;
-    let startX = 0;
-    let startY = 0;
+    let grabX = 0;
+    let grabY = 0;
     let originX = 0;
     let originY = 0;
+
+    /** Redraws the node, its label, its markers, and every ribbon on it. */
+    const reflow = () => {
+      refreshNode(/** @type {any} */ (geometry), /** @type {any} */ (scene.source));
+      group.setAttribute("transform", `translate(${geometry.x},${geometry.y})`);
+      if (label && geometry.label) {
+        label.setAttribute(
+          "transform",
+          geometry.label.angle === 0
+            ? `translate(${geometry.label.x},${geometry.label.y})`
+            : `translate(${geometry.label.x},${geometry.label.y}) rotate(${geometry.label.angle})`
+        );
+      }
+      attached.forEach((link, i) => {
+        refreshLink(link.geometry, /** @type {any} */ (scene.source).options);
+        attachedEls[i]?.setAttribute("d", link.geometry.d);
+      });
+    };
 
     group.addEventListener("pointerdown", (evt) => {
       const e = /** @type {PointerEvent} */ (evt);
       dragging = true;
-      const t = group.getAttribute("transform") ?? "";
-      const m = /translate\(([-\d.]+),([-\d.]+)\)/.exec(t);
-      originX = m ? parseFloat(m[1]) : 0;
-      originY = m ? parseFloat(m[2]) : 0;
-      startX = e.clientX;
-      startY = e.clientY;
+      const p = toUserSpace(root, e.clientX, e.clientY);
+      grabX = p.x;
+      grabY = p.y;
+      originX = box.x;
+      originY = box.y;
       group.style.cursor = "grabbing";
-      group.setPointerCapture?.(e.pointerId);
-      highlight(key);
+      try {
+        group.setPointerCapture?.(e.pointerId);
+      } catch {
+        // Capture is optional; dragging still works without it.
+      }
+      highlight(geometry.key);
       e.preventDefault();
     });
 
     group.addEventListener("pointermove", (evt) => {
       if (!dragging) return;
       const e = /** @type {PointerEvent} */ (evt);
-      const x = originX + (e.clientX - startX);
-      const y = originY + (e.clientY - startY);
-      group.setAttribute("transform", `translate(${x},${y})`);
+      const p = toUserSpace(root, e.clientX, e.clientY);
+      // Keep the node inside the drawing; a node dragged off the canvas is
+      // unrecoverable without a redraw.
+      box.x = Math.min(
+        Math.max(originX + (p.x - grabX), 0),
+        scene.width - geometry.width
+      );
+      box.y = Math.min(
+        Math.max(originY + (p.y - grabY), 0),
+        scene.height - geometry.height
+      );
+      reflow();
     });
 
     const end = (/** @type {Event} */ evt) => {
@@ -272,7 +345,11 @@ function attachInteraction(root, linkEls, nodeEls, style) {
       dragging = false;
       group.style.cursor = "grab";
       const e = /** @type {PointerEvent} */ (evt);
-      group.releasePointerCapture?.(e.pointerId);
+      try {
+        group.releasePointerCapture?.(e.pointerId);
+      } catch {
+        // Nothing to release.
+      }
       highlight(null);
     };
     group.addEventListener("pointerup", end);

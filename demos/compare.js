@@ -17,7 +17,7 @@ import {
 } from "../src/layout/index.js";
 import { buildScene } from "../src/render/scene.js";
 import { paintScene } from "../src/render/theme.js";
-import { sceneToSVG } from "../src/render/svg.js";
+import { sceneToDOM } from "../src/render/dom.js";
 import { measureScene, measurePaths } from "../src/metrics/index.js";
 import { randomLcg } from "../src/internal/random.js";
 
@@ -43,7 +43,10 @@ note(
   "<code>d3-sankey-diagram</code> routes through dummy nodes and draws with " +
   "circular arcs; it reaches overlap comparable to <code>flex-sankey</code> " +
   "but is markedly slower and crosses more. Times are wall-clock for the " +
-  "layout only, measured in your browser, so they will vary."
+  "layout only, measured in your browser, so they will vary.<br><br>" +
+  "The <code>flex-sankey</code> panel is live \u2014 drag a node and its ribbons " +
+  "re-route with it. The other two are drawn from the path strings their " +
+  "libraries produce, which carry no layout to update."
 );
 
 const values = controls(
@@ -96,11 +99,13 @@ const nodeIds = (links) => [...new Set(links.flatMap((l) => [l.source, l.target]
 /**
  * Renders one panel.
  * @param {string} title
- * @param {string} svgMarkup
+ * @param {string|Node} content Markup for the foreign libraries, live elements
+ *   for ours — only our own panel can be dragged, since the others are drawn
+ *   from path strings their libraries produced.
  * @param {any} metrics
  * @param {number} ms
  */
-function panel(title, svgMarkup, metrics, ms) {
+function panel(title, content, metrics, ms) {
   const box = document.createElement("div");
   box.className = "panel";
   const h = document.createElement("h3");
@@ -113,7 +118,8 @@ function panel(title, svgMarkup, metrics, ms) {
       `${Math.round(metrics.totalLength)} px · ${ms.toFixed(0)} ms`
     : "—";
   const body = document.createElement("div");
-  body.innerHTML = svgMarkup;
+  if (typeof content === "string") body.innerHTML = content;
+  else body.appendChild(content);
   box.append(h, sub, body);
   return box;
 }
@@ -214,7 +220,10 @@ async function render() {
       pathOpacity: 0.5, nodeStrokeWidth: 0, labelFont: "9px sans-serif"
     });
     const metrics = measureScene(scene, { sampleScale: 1 });
-    panels.push(panel("flex-sankey", sceneToSVG(painted, { titles: false }), metrics, ms));
+    // Ours is rendered live: drag a node and the ribbons follow.
+    panels.push(
+      panel("flex-sankey", sceneToDOM(painted, { interactive: true }), metrics, ms)
+    );
   }
 
   stage.replaceChildren(...panels);

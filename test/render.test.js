@@ -17,7 +17,7 @@ import {
   sankeyGeometricLayout,
   sankeyRenderLayout
 } from "../src/layout/index.js";
-import { buildScene } from "../src/render/scene.js";
+import { buildScene, refreshLink, refreshNode } from "../src/render/scene.js";
 import { paintScene, ordinalColorScale } from "../src/render/theme.js";
 import { sceneToSVG } from "../src/render/svg.js";
 import { sceneToDOM } from "../src/render/dom.js";
@@ -257,6 +257,67 @@ describe("sceneToSVG", () => {
     const svg = sceneToSVG(painted);
     const expected = painted.nodes.filter((n) => !n.geometry.dummy).length;
     expect((svg.match(/<rect /g) ?? []).length).toBe(expected);
+  });
+});
+
+describe("rebuilding geometry after a node moves", () => {
+  // What dragging depends on. A node's box is the same object the layout
+  // produced and the ribbons reference, so moving it and refreshing must
+  // re-route every ribbon attached to it — otherwise a dragged node detaches
+  // from its own flows.
+  const scene = buildScene(makeRenderLayout(), { width: 800, height: 500 });
+
+  it("keeps a reference to the layout box, without making the scene circular", () => {
+    const real = scene.nodes.find((n) => !n.dummy);
+    expect(real?.box).toBeTruthy();
+    // The back-reference must not surface when the scene is serialized.
+    expect(Object.keys(real ?? {})).not.toContain("box");
+    expect(() => JSON.stringify(scene)).not.toThrow();
+  });
+
+  it("re-routes exactly the ribbons attached to the moved node", () => {
+    const moved = scene.nodes.find(
+      (n) => !n.dummy && scene.links.some((l) => l.sourceKey === n.key)
+    );
+    if (!moved) throw new Error("no connected node in the fixture");
+
+    const before = scene.links.map((l) => l.d);
+    moved.box.y += 40;
+    refreshNode(moved, scene);
+    for (const link of scene.links) refreshLink(link, scene.options);
+
+    const changed = scene.links.filter((l, i) => l.d !== before[i]);
+    const attached = scene.links.filter(
+      (l) => l.sourceKey === moved.key || l.targetKey === moved.key
+    );
+    expect(changed.length).toBeGreaterThan(0);
+    expect(changed.length).toBe(attached.length);
+    for (const link of changed) {
+      expect([link.sourceKey, link.targetKey]).toContain(moved.key);
+    }
+  });
+
+  it("moves the node's own position and label with it", () => {
+    const node = scene.nodes.find((n) => n.label);
+    if (!node || !node.label) throw new Error("no labelled node in the fixture");
+    const y0 = node.y;
+    const labelY0 = node.label.y;
+    node.box.y += 25;
+    refreshNode(node, scene);
+    expect(node.y).toBeCloseTo(y0 + 25, 6);
+    expect(node.label.y).toBeCloseTo(labelY0 + 25, 6);
+  });
+
+  it("produces drawable geometry after a move", () => {
+    const node = scene.nodes.find((n) => !n.dummy);
+    if (!node) throw new Error("no real node in the fixture");
+    node.box.x += 15;
+    refreshNode(node, scene);
+    for (const link of scene.links) refreshLink(link, scene.options);
+    for (const link of scene.links) {
+      expect(link.d).not.toMatch(/NaN|Infinity|undefined/);
+      expect(link.curves.length).toBeGreaterThan(0);
+    }
   });
 });
 

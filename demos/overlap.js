@@ -15,7 +15,7 @@ import {
 } from "../src/layout/index.js";
 import { buildScene } from "../src/render/scene.js";
 import { paintScene } from "../src/render/theme.js";
-import { sceneToSVG } from "../src/render/svg.js";
+import { sceneToDOM } from "../src/render/dom.js";
 import { shapesFromScene, rasterizeCoverage, overlapStatistics } from "../src/metrics/index.js";
 import { randomLcg } from "../src/internal/random.js";
 
@@ -147,7 +147,7 @@ function render() {
     });
     const wrap = document.createElement("div");
     wrap.style.marginTop = v.view === "split" ? "16px" : "0";
-    wrap.innerHTML = sceneToSVG(painted, { titles: false });
+    wrap.appendChild(sceneToDOM(painted, { interactive: true }));
     container.appendChild(wrap);
   }
 
