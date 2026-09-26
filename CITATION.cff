@@ -23,6 +23,7 @@ authors:
 repository-code: https://github.com/esperanc/flex-sankey
 license: MIT
 version: 0.1.0
+date-released: '2026-09-26'
 abstract: >-
   A modular Sankey diagram layout library that separates the combinatorial and
   geometric stages of layout optimisation. Link crossings are reduced by a

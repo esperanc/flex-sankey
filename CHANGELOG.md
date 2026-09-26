@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.1.0 — 2026-09-26
 
-Initial extraction from the Observable notebooks.
+First release. Initial extraction from the Observable notebooks.
 
 ### Added
 

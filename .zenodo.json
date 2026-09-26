@@ -1,0 +1,44 @@
+{
+  "title": "flex-sankey: a modular library for Sankey diagram layout with overlap-free flow geometry",
+  "description": "<p>A modular Sankey diagram layout library for JavaScript. The layout is exposed as six separable stages rather than a single entry point: link crossings are reduced by a median or barycentre sweep refined with simulated-annealing swaps; node coordinates are settled by a one-dimensional spring relaxation with separate stiffnesses for edge, node and margin springs; and links are drawn with a ribbon geometry built from paired cubic B&eacute;ziers that prevents parallel links from overlapping. Three clutter-reducing encodings extend the layout itself rather than the renderer: packed paths, totalizing nodes and hidden nodes.</p><p>This archive contains the complete library, its test suite, nine interactive demos, and the full reproduction material for the accompanying paper: the benchmark dataset manifest, the generated datasets, the measurement code, the comparison harness and the scripts that produce every figure and table.</p>",
+  "upload_type": "software",
+  "license": "MIT",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Esperança, Claudio",
+      "affiliation": "COPPE, Universidade Federal do Rio de Janeiro, Brazil",
+      "orcid": "0000-0002-4942-3624"
+    },
+    {
+      "name": "Castro, Barbara",
+      "affiliation": "Escola de Belas Artes, Universidade Federal do Rio de Janeiro, Brazil",
+      "orcid": "0000-0002-0794-5643"
+    },
+    {
+      "name": "Kosminsky, Doris",
+      "affiliation": "Escola de Belas Artes, Universidade Federal do Rio de Janeiro, Brazil"
+    },
+    {
+      "name": "Mauro, Renato Campos",
+      "affiliation": "CEFET/RJ, Brazil",
+      "orcid": "0000-0002-4363-499X"
+    }
+  ],
+  "keywords": [
+    "Sankey diagram",
+    "flow visualization",
+    "graph drawing",
+    "layout algorithm",
+    "simulated annealing",
+    "crossing minimization",
+    "JavaScript"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/esperanc/flex-sankey",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}
