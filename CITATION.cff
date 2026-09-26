@@ -11,16 +11,24 @@ authors:
     given-names: Barbara
     orcid: https://orcid.org/0000-0002-0794-5643
     affiliation: EBA / UFRJ, Brazil
-  # ORCID pending: the identifier above is the one the EuroVis submission
-  # attributed to Doris Kosminsky. Confirm which author it belongs to.
   - family-names: Kosminsky
     given-names: Doris
+    orcid: https://orcid.org/0000-0003-2087-3928
     affiliation: EBA / UFRJ, Brazil
   - family-names: Mauro
     given-names: Renato Campos
     orcid: https://orcid.org/0000-0002-4363-499X
     affiliation: CEFET/RJ, Brazil
 repository-code: https://github.com/esperanc/flex-sankey
+url: https://esperanc.github.io/flex-sankey/
+doi: 10.5281/zenodo.22977232
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.22977232
+    description: Archived snapshot of release 0.1.0
+  - type: doi
+    value: 10.5281/zenodo.22977231
+    description: Concept DOI, always resolving to the latest release
 license: MIT
 version: 0.1.0
 date-released: '2026-09-26'

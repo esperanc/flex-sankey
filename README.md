@@ -35,6 +35,8 @@ Four pieces do the substantive work:
   through ordering and render layout; packing changes how vertices are built and
   how spacing is budgeted. See [below](#design-features-that-reach-into-the-layout).
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22977232.svg)](https://doi.org/10.5281/zenodo.22977232)
+
 **[Website and live demos](https://esperanc.github.io/flex-sankey/)**
 
 > An Original Software Publication describing this library is being submitted
@@ -286,7 +288,15 @@ the site of the fix. See `CHANGELOG.md`.
 
 ## Citation
 
-See [`CITATION.cff`](CITATION.cff).
+Release 0.1.0 is archived on Zenodo with DOI
+[10.5281/zenodo.22977232](https://doi.org/10.5281/zenodo.22977232). That DOI
+names this exact snapshot, including all benchmark data and the scripts that
+reproduce every figure and table in the accompanying paper. To cite the project
+irrespective of version, use the concept DOI
+[10.5281/zenodo.22977231](https://doi.org/10.5281/zenodo.22977231), which always
+resolves to the most recent release.
+
+Machine-readable metadata is in [`CITATION.cff`](CITATION.cff).
 
 ## License
 
