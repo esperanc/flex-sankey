@@ -22,6 +22,24 @@
 - `benchmarks/compare-figure.js` — renders one dataset as drawn by all three
   libraries side by side, as vector PDF and SVG, from the same geometry the
   metrics measure.
+- `benchmarks/ribbon-figure.js` — draws the annotated diagram of the ribbon
+  construction used in the manuscript, with the curves produced by
+  `outlinePathPoints` itself so the figure cannot drift from the code.
+- Tests pinning down why parallel ribbons do not overlap, rather than only
+  that adjacent ones share a boundary. Sharing a boundary does not by itself
+  rule out two boundaries crossing in between, as a reviewer pointed out. The
+  new tests assert the two facts that do: every boundary of a bundle has the
+  same monotone `y` profile `g(t) = (1-t)^2 (1+2t)`, and with the reference
+  line parallel to the flow direction (`maxAngle: 0`) no two boundaries of a
+  bundle cross. Beyond that angle the `x` profile varies from boundary to
+  boundary and the guarantee is empirical, not proved: over all 21 benchmark
+  datasets every within-bundle crossing is an order inversion between ribbons
+  that must cross anyway.
+
+### Changed
+
+- Benchmark charts label the x axis with the suite they belong to rather than
+  a bare `dataset`.
 
 ## 0.1.0 — 2026-09-26
 

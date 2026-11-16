@@ -234,6 +234,96 @@ describe("parallel ribbons", () => {
   });
 });
 
+describe("non-crossing boundaries", () => {
+  /** A point on a cubic. @param {number[][]} P @param {number} t */
+  const at = (P, t) => {
+    const u = 1 - t;
+    return [0, 1].map(
+      (i) =>
+        u * u * u * P[0][i] +
+        3 * u * u * t * P[1][i] +
+        3 * u * t * t * P[2][i] +
+        t * t * t * P[3][i]
+    );
+  };
+
+  // Sharing a boundary is not by itself enough to rule out overlap: two
+  // boundary curves could still cross between their endpoints. What rules it
+  // out is that every boundary of a bundle has the same y profile, because
+  // P0/P1 share the source y and P2/P3 share the target y. That collapses the
+  // cubic's y component to a blend of its two endpoint heights by the fixed
+  // weight g(t) = (1-t)^2 (1+2t), which decreases monotonically from 1 to 0.
+  it("gives every boundary the same monotone y profile", () => {
+    const g = (/** @type {number} */ t) => (1 - t) ** 2 * (1 + 2 * t);
+    for (const offset of [0, 60, -150]) {
+      for (const distance of [40, 300]) {
+        for (const maxAngle of [0, 20, 30, 60]) {
+          const ribbons = stackedRibbons({
+            n: 3, nodeSize: 120, distance, offset, anchorAtNode: true, maxAngle
+          });
+          for (const curves of ribbons) {
+            for (const P of curves) {
+              const alpha = P[0][1];
+              const beta = P[3][1];
+              for (let i = 0; i <= 20; i++) {
+                const t = i / 20;
+                expect(at(P, t)[1]).toBeCloseTo(alpha * g(t) + beta * (1 - g(t)), 9);
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // With the reference line parallel to the flow direction the tangent scale
+  // is identically 1, so all the boundaries of a bundle share one x profile
+  // too. Equal x then means equal t, and the ordering above leaves them no
+  // way to cross. This is the case the paper proves; beyond it the x profile
+  // varies from boundary to boundary and we only claim what we measure.
+  it("never crosses within a bundle when the reference line is parallel to the flow", () => {
+    /** @param {number[][]} A @param {number[][]} B */
+    const crosses = (A, B) => {
+      const N = 160;
+      const sgn = (/** @type {number} */ v) => (Math.abs(v) < 1e-9 ? 0 : Math.sign(v));
+      /** @param {number[]} p @param {number[]} q @param {number[]} r */
+      const side = (p, q, r) =>
+        sgn((q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]));
+      const a = [], b = [];
+      for (let i = 0; i <= N; i++) { a.push(at(A, i / N)); b.push(at(B, i / N)); }
+      for (let i = 0; i < N; i++) {
+        for (let j = 0; j < N; j++) {
+          const o1 = side(a[i], a[i + 1], b[j]);
+          const o2 = side(a[i], a[i + 1], b[j + 1]);
+          const o3 = side(b[j], b[j + 1], a[i]);
+          const o4 = side(b[j], b[j + 1], a[i + 1]);
+          if (o1 !== o2 && o3 !== o4 && o1 && o2 && o3 && o4) return true;
+        }
+      }
+      return false;
+    };
+
+    for (const offset of [0, 60, -150, 300]) {
+      for (const distance of [20, 60, 300]) {
+        const ribbons = stackedRibbons({
+          n: 4, nodeSize: 140, distance, offset, anchorAtNode: true, maxAngle: 0
+        });
+        const sides = ribbons.flat();
+        for (let i = 0; i < sides.length; i++) {
+          for (let j = i + 1; j < sides.length; j++) {
+            // Shared boundaries are the same curve, not a crossing.
+            if (curveDistance(sides[i], sides[j]) < 1e-9) continue;
+            expect(
+              crosses(sides[i], sides[j]),
+              `offset=${offset} distance=${distance} sides ${i},${j}`
+            ).toBe(false);
+          }
+        }
+      }
+    }
+  });
+});
+
 describe("path string builders", () => {
   it("outlinePath emits a closed two-sided outline", () => {
     const d = outlinePath({

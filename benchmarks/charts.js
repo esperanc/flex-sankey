@@ -155,7 +155,7 @@ function chart(rows, suite, metric) {
     `<line x1="${margin.left}" y1="${margin.top + plotH}" x2="${margin.left + plotW}" y2="${margin.top + plotH}" stroke="#333" stroke-width="1"/>`
   );
   out.push(
-    `<text x="${(margin.left + plotW / 2).toFixed(1)}" y="${height - 24}" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555">dataset</text>`
+    `<text x="${(margin.left + plotW / 2).toFixed(1)}" y="${height - 24}" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555">datasets of the ${esc(suite.id)} suite</text>`
   );
 
   // Mean across the suite, as a compact readout under the axis label.
