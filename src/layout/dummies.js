@@ -84,7 +84,6 @@ export function sankeyAddPathNavigation(layout) {
  *
  * @param {Layout} initialLayout Typically the result of `sankeyLayers`.
  * @returns {NavigableLayout} The augmented layout.
- * @throws {Error} If a unique dummy key cannot be derived.
  */
 export function sankeyAddDummies(initialLayout) {
   const layers = initialLayout.layers.map((layer) => layer.slice());
@@ -105,10 +104,12 @@ export function sankeyAddDummies(initialLayout) {
       if (targetNode.layer - node.layer > 1) {
         link.dummies = [];
         for (let i = node.layer + 1; i < targetNode.layer; i++) {
+          // One dummy per intermediate layer, so a link spanning n layers
+          // takes the suffixes 1..n-1. The search is bounded by `nodeMap`
+          // being finite; capping it instead would fail on long links.
           const prefix = `${sourceName}-${targetName}-`;
           let suffix = 1;
-          while (nodeMap[prefix + suffix] && suffix < 5) suffix++;
-          if (suffix >= 5) throw new Error("dummy key heuristic exhausted");
+          while (nodeMap[prefix + suffix]) suffix++;
           const key = prefix + suffix;
           /** @type {SankeyNode} */
           const dummy = {

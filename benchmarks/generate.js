@@ -11,7 +11,7 @@
  * Copyright (c) 2026 Claudio Esperança and contributors
  */
 
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -22,6 +22,33 @@ import { suites, OPTIONAL_PROBABILITY, REGULARITY } from "./manifest.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const outDir = join(here, "datasets");
+const realDir = join(here, "real");
+
+/**
+ * Reads a published `source,target,value` CSV.
+ *
+ * Deliberately minimal: the files under `real/` are kept byte-for-byte as
+ * published, and this parser handles exactly the shape they have. Values are
+ * split from the right so node names containing a comma survive.
+ *
+ * @param {string} file Name of a CSV under `benchmarks/real/`.
+ * @returns {{source: string, target: string, value: number}[]}
+ */
+function readRealLinks(file) {
+  const text = readFileSync(join(realDir, file), "utf8").trim();
+  const [header, ...lines] = text.split(/\r?\n/);
+  if (header.trim() !== "source,target,value") {
+    throw new Error(`${file}: expected a source,target,value header`);
+  }
+  return lines.map((line, i) => {
+    const v = line.lastIndexOf(",");
+    const t = line.lastIndexOf(",", v - 1);
+    if (v < 0 || t < 0) throw new Error(`${file}: malformed line ${i + 2}`);
+    const value = Number(line.slice(v + 1));
+    if (!Number.isFinite(value)) throw new Error(`${file}: bad value on line ${i + 2}`);
+    return { source: line.slice(0, t), target: line.slice(t + 1, v), value };
+  });
+}
 
 /** Seed for the ordering pass used only to report a crossing count. */
 const PROBE_SEED = 1;
@@ -55,11 +82,13 @@ const summary = [];
 for (const suite of suites) {
   const topologies = new Set();
   for (const entry of suite.datasets) {
-    const links = makeSyntheticSankeyData(suite.spec, {
-      randomSeed: entry.randomSeed,
-      regularity: entry.regularity,
-      optionalProbability: entry.optionalProbability
-    });
+    const links = entry.file
+      ? readRealLinks(entry.file)
+      : makeSyntheticSankeyData(/** @type {any} */ (suite.spec), {
+          randomSeed: /** @type {number} */ (entry.randomSeed),
+          regularity: /** @type {number} */ (entry.regularity),
+          optionalProbability: /** @type {number} */ (entry.optionalProbability)
+        });
     const shape = describe(links);
     topologies.add(shape.topology);
 

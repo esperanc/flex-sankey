@@ -178,5 +178,14 @@
     "layers": 6,
     "dummies": 68,
     "crossings": 607
+  },
+  {
+    "suite": "real",
+    "id": "real-uk-energy-2050",
+    "nodes": 48,
+    "links": 68,
+    "layers": 8,
+    "dummies": 63,
+    "crossings": 76
   }
 ]

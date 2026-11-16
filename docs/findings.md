@@ -92,3 +92,58 @@ settings above while the comparison libraries used their defaults; different
 choices shift the numbers. The crossings result is robust to this — it holds on
 every dataset in both suites — whereas the overlap near-tie sits well within
 the range that tuning can move.
+
+## Real-world data (added after review)
+
+Reviewer 1 asked for non-synthetic instances ("No real-world instances?",
+manuscript p9). The benchmark now includes a third suite of one published
+dataset: a 2050 UK energy scenario from the Department of Energy & Climate
+Change via Tom Counsell, taken unmodified from the `d3-sankey` example that
+uses it. Provenance is recorded in `benchmarks/real/PROVENANCE.md`.
+
+It is deliberately the dataset `d3-sankey` itself ships as its showcase, so
+the comparison cannot be said to rest on data chosen to suit this library.
+
+### Shape
+
+| | nodes | links | dummies | dummies/link |
+| --- | --- | --- | --- | --- |
+| energy (synthetic) | 16–18 | 34–45 | 19–31 | 0.56–0.69 |
+| layered (synthetic) | 52–54 | 133–140 | 67–72 | 0.50–0.51 |
+| **real (UK 2050)** | **48** | **68** | **63** | **0.93** |
+
+27 of its 68 links skip at least one layer and the longest spans six, so it
+carries a heavier routing burden per link than either generated suite.
+
+### Result
+
+| library | crossings | overlap % | excess % | length | ms |
+| --- | --- | --- | --- | --- | --- |
+| d3-sankey | 134 | 19.92 | 22.27 | **12 697** | **1** |
+| d3-sankey-diagram | 65 | 4.21 | 4.38 | 14 259 | 607 |
+| **flex-sankey** | **56** | **3.65** | **3.76** | 14 642 | 120 |
+
+Two things are worth stating plainly:
+
+- This is the **only** suite where `flex-sankey` wins overlap outright. On the
+  synthetic suites it ties `d3-sankey-diagram` (7.18 vs 7.29; 14.36 vs 14.37),
+  a gap small enough to be parameterisation. Here it is 3.65 vs 4.21.
+- `flex-sankey` draws the **longest** total link length of the three. The
+  ribbons are smoother and overlap less, and they are not shorter. This should
+  be said rather than omitted.
+
+### A bug this exposed
+
+`sankeyAddDummies` derived dummy keys as `source-target-N` and searched only
+`N = 1..4`, throwing `dummy key heuristic exhausted` beyond that. A link
+spanning *n* layers needs *n−1* dummies, so any link spanning more than five
+layers failed outright.
+
+Both synthetic suites cap spans at three (`LAYERED_SHAPE.maxSpan`), so nothing
+in the benchmark had ever reached the limit. The real dataset has a
+`Bio-conversion → Losses` link spanning six layers, which hit it immediately.
+
+The cap served no purpose: `nodeMap` is finite, so the search terminates
+regardless. It was removed. The library previously could not lay out a graph
+with a link spanning more than five layers — a real limitation, not a
+hypothetical one, and not one any synthetic test would have found.

@@ -1,5 +1,28 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- `sankeyAddDummies` could not route a link spanning more than five layers: the
+  dummy-key search was capped at suffix 5 and threw
+  `dummy key heuristic exhausted` beyond it. The cap was unnecessary — the
+  search is bounded by the node map being finite — and has been removed.
+  Found by the new real-world benchmark dataset, whose longest link spans six
+  layers; both synthetic suites cap spans at three and never reached it.
+
+### Added
+
+- `benchmarks/real/` — published, non-generated benchmark data, with
+  provenance. First entry is a 2050 UK energy scenario (Department of Energy &
+  Climate Change via Tom Counsell), taken unmodified from the `d3-sankey`
+  example that uses it.
+- A `real` suite in the benchmark manifest. Datasets may now be loaded from a
+  CSV (`DatasetEntry.file`) instead of generated from a spec and seed.
+- `benchmarks/compare-figure.js` — renders one dataset as drawn by all three
+  libraries side by side, as vector PDF and SVG, from the same geometry the
+  metrics measure.
+
 ## 0.1.0 — 2026-09-26
 
 First release. Initial extraction from the Observable notebooks.

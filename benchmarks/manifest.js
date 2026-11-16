@@ -51,9 +51,12 @@ export const LAYERED_SHAPE = {
 /**
  * @typedef {object} DatasetEntry
  * @property {string} id
- * @property {number} randomSeed
- * @property {number} regularity
- * @property {number} optionalProbability
+ * @property {number} [randomSeed]
+ * @property {number} [regularity]
+ * @property {number} [optionalProbability]
+ * @property {string} [file] A CSV under `benchmarks/real/`. When present the
+ *   dataset is *loaded* rather than generated, and the seed fields do not
+ *   apply. See `benchmarks/real/PROVENANCE.md`.
  */
 
 /**
@@ -61,7 +64,8 @@ export const LAYERED_SHAPE = {
  * @property {string} id
  * @property {string} label Shown on chart axes.
  * @property {string} description
- * @property {import("../src/data/synthetic.js").GraphSpec} spec
+ * @property {import("../src/data/synthetic.js").GraphSpec} [spec] Absent for
+ *   suites whose datasets are loaded from files.
  * @property {DatasetEntry[]} datasets
  */
 
@@ -98,6 +102,16 @@ export const suites = [
       "scalable further by widening LAYERED_SHAPE.",
     spec: makeLayeredSpec(LAYERED_SHAPE),
     datasets: seeded("layered")
+  },
+  {
+    id: "real",
+    label: "Published data",
+    description:
+      "Real published data rather than generated data. A UK energy scenario " +
+      "for 2050 from the Department of Energy & Climate Change, via Tom " +
+      "Counsell, obtained from the d3-sankey example that uses it. Included " +
+      "so the comparison rests on data this project did not choose or shape.",
+    datasets: [{ id: "real-uk-energy-2050", file: "uk-energy-2050.csv" }]
   }
 ];
 

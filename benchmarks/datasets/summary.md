@@ -26,3 +26,4 @@ Crossings are measured after 40 ordering passes with a fixed seed, as an indicat
 | layered-07 | 54 | 140 | 6 | 72 | 710 |
 | layered-08 | 53 | 135 | 6 | 67 | 564 |
 | layered-09 | 52 | 137 | 6 | 68 | 607 |
+| real-uk-energy-2050 | 48 | 68 | 8 | 63 | 76 |
