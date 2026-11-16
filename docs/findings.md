@@ -147,3 +147,50 @@ The cap served no purpose: `nodeMap` is finite, so the search terminates
 regardless. It was removed. The library previously could not lay out a graph
 with a link spanning more than five layers — a real limitation, not a
 hypothetical one, and not one any synthetic test would have found.
+
+## The non-overlap guarantee, stated precisely (added after review)
+
+The submission said parallel ribbons "provably" cannot overlap, resting on the
+fact that adjacent ribbons share a boundary curve exactly. A reviewer pointed
+out that this does not follow: two ribbons can share a boundary and still have
+that boundary cross a neighbouring one somewhere between the endpoints. The
+objection is correct, and the claim needed splitting into what is proved and
+what is measured.
+
+**Proved.** Within a bundle — the ribbons joining one ordered pair of node
+faces, abutting at both ends, which is what a packed run of dummy nodes
+produces:
+
+1. Adjacent ribbons share a boundary exactly. Both sides compute the same four
+   control points, because the reference anchors depend on the node pair alone.
+2. Every boundary has the same `y` profile. `P0`/`P1` carry the source height
+   `α` and `P2`/`P3` the target height `β`, so the cubic's `y` component is
+   `α·g(t) + β·(1-g(t))` with `g(t) = (1-t)²(1+2t)` — the same `g` for every
+   boundary in the bundle, and `g'(t) = -6t(1-t) ≤ 0`, so it decreases
+   monotonically. A boundary that starts and ends above another is above it
+   throughout.
+3. With `maxAngle: 0` the tangent scale is identically 1, so the whole bundle
+   shares one `x` profile too, non-decreasing for `bias ≤ 1`. Equal `x` then
+   means equal `t`, and (2) finishes it: consistently ordered ribbons cannot
+   cross. Ribbons ordered one way at the source and the other way at the
+   target do cross, as they must.
+
+**Measured, not proved.** Above `maxAngle: 0` the tangent scale varies from
+boundary to boundary, the shared `x` profile is lost and (3) no longer
+follows. Sweeping bundle geometries, crossings do appear — but only where the
+gap along the flow direction is a small fraction of the gap across it *and* a
+single ribbon is wider than that gap. The layout stages do not produce that.
+Across all 21 benchmark datasets at the default angle, every within-bundle
+boundary crossing is an order inversion of the kind in (3), and there is none
+between consistently ordered ribbons.
+
+Both proved parts are now executable tests in `test/outline.test.js`.
+
+### Two numbers the manuscript had wrong
+
+- The default angle limit was reported as 30°. That is the default of the
+  functions in `paths/outline.js`; `buildScene` — which is what actually draws
+  a diagram — defaults to 20°, and the manuscript figures are drawn at 20°.
+- Equation (1) was written with the offset term as `(d - p)`. The source end
+  uses `δ - q_a` and the target end `δ + q_b`; the signs differ between the
+  two ends and the single form hid that.
