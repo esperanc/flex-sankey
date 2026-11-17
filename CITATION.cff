@@ -30,8 +30,8 @@ identifiers:
     value: 10.5281/zenodo.22977231
     description: Concept DOI, always resolving to the latest release
 license: MIT
-version: 0.1.0
-date-released: '2026-09-26'
+version: 0.1.1
+date-released: '2026-11-17'
 abstract: >-
   A modular Sankey diagram layout library that separates the combinatorial and
   geometric stages of layout optimisation. Link crossings are reduced by a

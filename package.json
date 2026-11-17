@@ -1,6 +1,6 @@
 {
   "name": "flex-sankey",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A modular Sankey diagram layout library: simulated-annealing crossing reduction, spring-based node placement, overlap-free ribbon geometry, and packed paths, totalizing and hidden nodes built into the layout.",
   "type": "module",
   "license": "MIT",

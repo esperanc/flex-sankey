@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 — 2026-11-17
 
 ### Fixed
 
@@ -40,6 +40,21 @@
 
 - Benchmark charts label the x axis with the suite they belong to rather than
   a bare `dataset`.
+- `benchmarks/compare-figure.js` draws the competing libraries only, on the
+  dataset the manuscript's own example figure uses, and sets them the way
+  `benchmarks/figures.js` sets that one: same canvas, margins, palette keyed
+  on the source node, ribbon opacity, node thickness and stroke, label
+  placement. It draws node rectangles and names for them too, which it did
+  not before. The panel this library would occupy is left out, because that
+  drawing is the example figure itself.
+- `layoutD3Sankey` and `layoutD3SankeyDiagram` accept an extent and a node
+  width. Both default to what the benchmark has always used, and the geometry
+  they produce at the defaults is unchanged.
+- The hidden-node figure is drawn with a wider left margin, so that the
+  marker labels outside its leftmost nodes are no longer cropped against the
+  edge of the page.
+- The hybrid-layout figure is drawn with a larger label size and shorter
+  sector names, so that its text survives reduction to a journal column.
 
 ## 0.1.0 — 2026-09-26
 
