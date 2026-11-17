@@ -21,11 +21,11 @@ authors:
     affiliation: CEFET/RJ, Brazil
 repository-code: https://github.com/esperanc/flex-sankey
 url: https://esperanc.github.io/flex-sankey/
-doi: 10.5281/zenodo.22977232
+doi: 10.5281/zenodo.24323814
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.22977232
-    description: Archived snapshot of release 0.1.0
+    value: 10.5281/zenodo.24323814
+    description: Archived snapshot of release 0.1.1
   - type: doi
     value: 10.5281/zenodo.22977231
     description: Concept DOI, always resolving to the latest release
