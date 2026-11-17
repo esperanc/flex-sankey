@@ -3,7 +3,7 @@
 A modular Sankey diagram layout library for JavaScript: crossing reduction by
 simulated annealing, node placement by a spring relaxation, a ribbon geometry
 that keeps parallel links from overlapping, and three clutter-reducing
-encodings built into the layout itself.
+strategies built into the layout itself.
 
 Unlike most Sankey libraries, `flex-sankey` does not hide the layout behind a
 single entry point. Each stage of the pipeline is a separate function that can
@@ -28,14 +28,14 @@ Four pieces do the substantive work:
   cubic Béziers whose control points derive from a reference line joining the
   node centres, which makes adjacent parallel ribbons share their boundary
   curve exactly.
-- **Clutter-reducing encodings built into the layout.** *Packed paths*,
+- **Clutter-reducing strategies built into the layout.** *Packed paths*,
   *totalizing nodes* and *hidden nodes* are not rendering options: hidden nodes
   are excluded from layer assignment, dummy routing, the crossing counts and the
   spring system; totalizing nodes thread each split link's original endpoints
   through ordering and render layout; packing changes how vertices are built and
   how spacing is budgeted. See [below](#design-features-that-reach-into-the-layout).
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22977232.svg)](https://doi.org/10.5281/zenodo.22977232)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22977231.svg)](https://doi.org/10.5281/zenodo.22977231)
 
 **[Website and live demos](https://esperanc.github.io/flex-sankey/)**
 
@@ -62,7 +62,7 @@ extent with neither gap nor overlap. That property is asserted directly in
 
 ## Design features that reach into the layout
 
-Three encodings address the clutter that arises when a graph has high
+Three strategies address the clutter that arises when a graph has high
 connectivity, or mixes primary flows with incidental ones. None is a rendering
 option: each needs the layout stages themselves to understand it.
 
@@ -100,19 +100,100 @@ overlap fivefold.
 
 ## Install
 
-Not published to a registry. Clone it, or add it as a git dependency:
+Not published to a registry, so install it from GitHub:
 
 ```bash
 npm install github:esperanc/flex-sankey
 ```
 
-Then install its development dependencies to run the checks:
+There is nothing else to install and nothing to build: the package ships its
+ES modules as they are and has no runtime dependencies.
+
+To work on the library instead — run the tests, the benchmark or the demos —
+clone it and install its *development* dependencies:
 
 ```bash
+git clone https://github.com/esperanc/flex-sankey.git
+cd flex-sankey
 npm install
+npm run check      # typecheck, then tests
 ```
 
 ## Usage
+
+### A complete example
+
+From an empty directory to a drawn diagram. First:
+
+```bash
+npm init -y
+npm install github:esperanc/flex-sankey
+```
+
+Save this as `sankey.mjs`:
+
+```js
+import { writeFileSync } from "node:fs";
+import { flexSankeySVG } from "flex-sankey";
+
+const links = [
+  { source: "Coal", target: "Electricity", value: 40 },
+  { source: "Gas", target: "Electricity", value: 25 },
+  { source: "Wind", target: "Electricity", value: 15 },
+  { source: "Electricity", target: "Homes", value: 35 },
+  { source: "Electricity", target: "Industry", value: 30 },
+  { source: "Electricity", target: "Losses", value: 15 }
+];
+
+const svg = flexSankeySVG({ links }, { width: 640, height: 320 });
+writeFileSync("sankey.svg", svg);
+```
+
+Then:
+
+```bash
+node sankey.mjs
+```
+
+`sankey.svg` is a self-contained diagram — open it in any browser. That is the
+whole of the common case: a list of `{ source, target, value }` objects in, SVG
+markup out. No build step, no DOM, no configuration beyond the size you want.
+
+In a browser, `flexSankey` returns a live `<svg>` element instead, with dragging
+and hover highlighting:
+
+```js
+import { flexSankey } from "flex-sankey";
+
+document.body.appendChild(flexSankey({ links }, { width: 640, height: 320 }));
+```
+
+> **One thing to know up front.** The ordering stage is randomised, so two runs
+> on the same input can differ. Pass `random: randomLcg(1)` to pin it — see
+> [Reproducibility](#reproducibility). Everything else is deterministic.
+
+### Colours and labels
+
+The same call takes the styling options:
+
+```js
+import { flexSankeySVG } from "flex-sankey";
+
+const svg = flexSankeySVG({ links }, {
+  width: 800, height: 500,
+  colorScale: (key) => myColors[key],   // node key -> colour
+  pathColor: "source-target",           // or "source", "target", or a colour
+  labelFont: "12px sans-serif"
+});
+```
+
+`flexSankeySVG` runs all six stages back to back. Calling them separately is
+what the library is *for* — see [The layout pipeline](#the-layout-pipeline)
+below — but nothing forces you to start there.
+
+### Drawing a single ribbon
+
+The ribbon geometry is also usable on its own, without the layout:
 
 ```js
 import { outlineHorizontalPath } from "flex-sankey/paths";
@@ -179,15 +260,7 @@ elements in a browser. `Scene` carries each ribbon's Bézier control points
 alongside its path string, so geometry can be measured directly rather than by
 parsing SVG back.
 
-```js
-import { flexSankeySVG } from "flex-sankey";
-
-const svg = flexSankeySVG({ links }, {
-  width: 800, height: 500, size: 500, length: 800,
-  colorScale: (key) => myColors[key],
-  pathColor: "source-target"
-});
-```
+Driving the stages yourself, rather than through `flexSankeySVG`:
 
 ```js
 import {
@@ -288,10 +361,13 @@ the site of the fix. See `CHANGELOG.md`.
 
 ## Citation
 
-Release 0.1.0 is archived on Zenodo with DOI
-[10.5281/zenodo.22977232](https://doi.org/10.5281/zenodo.22977232). That DOI
-names this exact snapshot, including all benchmark data and the scripts that
-reproduce every figure and table in the accompanying paper. To cite the project
+Release 0.1.1 is archived on Zenodo with DOI
+[10.5281/zenodo.24323814](https://doi.org/10.5281/zenodo.24323814). That DOI
+names that exact snapshot, including all benchmark data and the scripts that
+reproduce every figure and table in the accompanying paper. (Release 0.1.0,
+[10.5281/zenodo.22977232](https://doi.org/10.5281/zenodo.22977232), predates
+the published benchmark dataset and should not be used to reproduce the
+paper.) To cite the project
 irrespective of version, use the concept DOI
 [10.5281/zenodo.22977231](https://doi.org/10.5281/zenodo.22977231), which always
 resolves to the most recent release.

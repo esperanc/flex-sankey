@@ -1,5 +1,28 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- `flexSankey`, `flexSankeySVG` and `flexSankeyScene` laid the diagram out at
+  the default extent of 800 by 500 and then cropped it to whatever `width` and
+  `height` were asked for, so the obvious one-call usage —
+  `flexSankeySVG({ links }, { width, height })` — lost the right-hand layers
+  and the bottom of the diagram. The one-call entry points now carry `width`
+  and `height` across as `length` and `size` unless an extent is given
+  explicitly. Calling the stages directly is unaffected: there the four
+  numbers are independent by design.
+
+### Changed
+
+- The README leads with a complete worked example — empty directory to a drawn
+  diagram — instead of with a single-ribbon path function. A reviewer of the
+  accompanying paper reported being unable to get the library running with low
+  effort, which the old ordering fully explains.
+- `encodings` renamed `strategies` throughout the README, matching the paper.
+- The Zenodo badge points at the concept DOI, which does not go stale with each
+  release.
+
 ## 0.1.1 — 2026-11-17
 
 ### Fixed

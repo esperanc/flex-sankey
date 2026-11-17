@@ -46,14 +46,25 @@ import { sceneToDOM } from "./render/dom.js";
  * }}
  */
 export function flexSankeyScene(data, options = {}) {
-  const layered = options.nodeAlign
-    ? sankeyLayers(data, options)
-    : sankeyOptimalLayers(data, options);
-  const ordered = sankeyOrderNodes(sankeyAddDummies(layered), options);
-  const geometry = sankeyGeometricLayout(ordered, options);
-  const renderLayout = sankeyRenderLayout(geometry, options);
-  const scene = buildScene(renderLayout, options);
-  const painted = paintScene(scene, options);
+  // `width` and `height` are the drawing surface; `length` and `size` are the
+  // extent the layout is computed within. Called stage by stage those are four
+  // independent numbers, and deliberately so. In one call they are not: a
+  // caller who gives only a surface means the diagram to fill it, and leaving
+  // the extent at its own default silently lays the diagram out at 800 by 500
+  // and crops it to whatever surface was asked for.
+  const opts = {
+    ...options,
+    length: options.length ?? options.width,
+    size: options.size ?? options.height
+  };
+  const layered = opts.nodeAlign
+    ? sankeyLayers(data, opts)
+    : sankeyOptimalLayers(data, opts);
+  const ordered = sankeyOrderNodes(sankeyAddDummies(layered), opts);
+  const geometry = sankeyGeometricLayout(ordered, opts);
+  const renderLayout = sankeyRenderLayout(geometry, opts);
+  const scene = buildScene(renderLayout, opts);
+  const painted = paintScene(scene, opts);
   return {
     layout: geometry,
     renderLayout,

@@ -22,6 +22,7 @@ import { paintScene, ordinalColorScale } from "../src/render/theme.js";
 import { sceneToSVG } from "../src/render/svg.js";
 import { sceneToDOM } from "../src/render/dom.js";
 import { labelAlignment, resolveLabelPos } from "../src/render/labels.js";
+import { flexSankeyScene, flexSankeySVG } from "../src/flex-sankey.js";
 import { makeSyntheticSankeyData } from "../src/data/synthetic.js";
 import { energySpec } from "../src/data/energy.js";
 import { randomLcg } from "../src/internal/random.js";
@@ -326,5 +327,47 @@ describe("sceneToDOM", () => {
     const painted = paintScene(buildScene(makeRenderLayout(), {}), {});
     // vitest's node environment has no global document.
     expect(() => sceneToDOM(painted)).toThrow(/DOM/);
+  });
+});
+
+describe("flexSankeyScene", () => {
+  /** A small diagram with one intermediate layer. */
+  const links = [
+    { source: "Coal", target: "Electricity", value: 40 },
+    { source: "Gas", target: "Electricity", value: 25 },
+    { source: "Wind", target: "Electricity", value: 15 },
+    { source: "Electricity", target: "Homes", value: 35 },
+    { source: "Electricity", target: "Industry", value: 30 },
+    { source: "Electricity", target: "Losses", value: 15 }
+  ];
+
+  it("lays the diagram out within the surface it was given", () => {
+    // `width`/`height` are the surface and `length`/`size` the layout extent.
+    // Given only the first pair, the one-call entry point has to carry them
+    // across: laying out at the extent's own default and cropping to the
+    // surface loses the last layer entirely, which is what used to happen.
+    const { scene } = flexSankeyScene({ links }, { width: 640, height: 320 });
+    expect(scene.width).toBe(640);
+    expect(scene.height).toBe(320);
+    for (const node of scene.nodes) {
+      expect(node.box.x + node.box.width).toBeLessThanOrEqual(640);
+      expect(node.box.y + node.box.height).toBeLessThanOrEqual(320);
+    }
+  });
+
+  it("still honours an extent given explicitly", () => {
+    const { scene } = flexSankeyScene(
+      { links },
+      { width: 640, height: 320, length: 400, size: 200 }
+    );
+    const right = Math.max(...scene.nodes.map((n) => n.box.x + n.box.width));
+    expect(right).toBeLessThanOrEqual(400);
+    expect(scene.width).toBe(640);
+  });
+
+  it("emits SVG whose viewBox matches the surface", () => {
+    const svg = flexSankeySVG({ links }, { width: 640, height: 320 });
+    expect(svg).toContain('viewBox="0 0 640 320"');
+    expect(svg).not.toMatch(/NaN|Infinity|undefined/);
   });
 });
