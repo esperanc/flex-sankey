@@ -43,9 +43,10 @@ const LABEL = {
 };
 
 /**
- * Flattening tolerance for drawing, in diagram units. The metrics use 0.25;
- * panels are drawn at 0.56 scale, so 1.0 here is ~0.56pt of deviation on the
- * page — invisible in print, and about a third of the file size.
+ * Flattening tolerance for drawing, in diagram units. The metrics use 0.25.
+ * Panels are emitted at native canvas size and reduced to about a fifth of it
+ * by the manuscript, so 1.0 here is ~0.2pt of deviation on the page —
+ * invisible in print, and about a third of the file size.
  */
 const DRAW_TOLERANCE = 1.0;
 
@@ -132,45 +133,40 @@ const { links } = JSON.parse(
   readFileSync(join(here, "datasets", `${datasetId}.json`), "utf8")
 );
 
-const GAP = 26;
-const PAD = 10;
-const TITLE = 16;
-const scale = 0.56; // three 800pt panels would overflow a journal column
-const panelW = CANVAS.width * scale;
-const panelH = CANVAS.height * scale;
-const pageW = PAD * 2 + panelW * 3 + GAP * 2;
-const pageH = PAD * 2 + panelH + TITLE;
-
-let content = "";
+// One PDF per library, at native canvas size and carrying no text. The panels
+// used to be tiled into a single labelled page, but a three-panel strip is
+// reduced to about a fifth of its width to fit a journal page, which took the
+// 9pt labels down to under 2pt. The manuscript now places the panels in a
+// tabular and sets the names as ordinary LaTeX text, so they stay readable at
+// any scale and match the body font.
 /** @type {string[]} */
 const svg = [];
 
 LIBRARIES.forEach((library, index) => {
   const result = library.run(links);
   const groups = polygonsOf(result);
-  const originX = PAD + index * (panelW + GAP);
-  // PDF y grows upward; the diagrams are in screen coordinates.
-  const originY = PAD;
 
-  content += `q /GA gs ${FILL.join(" ")} rg\n`;
+  let content = `q /GA gs ${FILL.join(" ")} rg\n`;
   for (const polygons of groups) {
     for (const ring of polygons) {
       if (!ring || ring.length < 3) continue;
       ring.forEach(([px, py], i) => {
-        const x = originX + px * scale;
-        const y = originY + (CANVAS.height - py) * scale;
-        content += `${f(x)} ${f(y)} ${i === 0 ? "m" : "l"}\n`;
+        // PDF y grows upward; the diagrams are in screen coordinates.
+        content += `${f(px)} ${f(CANVAS.height - py)} ${i === 0 ? "m" : "l"}\n`;
       });
       content += "h\n";
     }
   }
   content += "f\nQ\n";
 
-  const label = LABEL[library.id] ?? library.id;
-  content +=
-    `BT /F1 9 Tf 0 0 0 rg ${f(originX)} ${f(PAD + panelH + 5)} Td (${label}) Tj ET\n`;
+  writeFileSync(
+    join(outDir, `compare-${datasetId}-${library.id}.pdf`),
+    pdf(content, CANVAS.width, CANVAS.height)
+  );
 
-  // An SVG twin, for looking at without a PDF viewer.
+  // An SVG twin of the whole strip, for looking at without a PDF viewer. This
+  // one keeps its labels, since nothing scales it down.
+  const label = LABEL[library.id] ?? library.id;
   const paths = groups.flatMap((polygons) =>
     polygons
       .filter((r) => r && r.length >= 3)
@@ -186,7 +182,6 @@ LIBRARIES.forEach((library, index) => {
   );
 });
 
-writeFileSync(join(outDir, `compare-${datasetId}.pdf`), pdf(content, pageW, pageH));
 writeFileSync(
   join(outDir, `compare-${datasetId}.svg`),
   `<svg xmlns="http://www.w3.org/2000/svg" width="${CANVAS.width * 3 + 80}" ` +
@@ -196,4 +191,6 @@ writeFileSync(
     `</svg>\n`
 );
 
-console.log(`wrote compare-${datasetId}.pdf and .svg to ${outDir}`);
+console.log(
+  `wrote ${LIBRARIES.length} panel PDFs and compare-${datasetId}.svg to ${outDir}`
+);
