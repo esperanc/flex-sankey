@@ -81,7 +81,11 @@ const figures = [
       data: addTotalizingNodes(links, energySumNodes),
       hidden: ["Imp.", "Exp.", "Heat & Waste"],
       joinDummies: true,
-      marginLeft: 26
+      // Room for the hidden-flow markers and their labels, which sit outside
+      // the leftmost nodes: the marker, the label gap and the width of
+      // "Imp." at the label size. It used to be 26, which cropped that
+      // label's first letter against the left edge of the page.
+      marginLeft: 40
     }
   }
 ];
