@@ -13,6 +13,15 @@
   explicitly. Calling the stages directly is unaffected: there the four
   numbers are independent by design.
 
+- The pipeline demo drew the dummy-node chains wrongly at stages 2 and 3. A
+  routed link keeps its original source and target and carries the chain of
+  dummy keys between them, and the same link object appears in the `outgoing`
+  of every node on that chain; the demo hopped to `dummies[0]` from each of
+  them. Every chain was therefore drawn as its first hop repeated, including a
+  zero-length line from the first dummy to itself, and the last hop was never
+  drawn at all, so no link reached the final layer. Reported by a reviewer of
+  the accompanying paper.
+
 ### Changed
 
 - The README leads with a complete worked example — empty directory to a drawn

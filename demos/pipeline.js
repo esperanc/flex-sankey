@@ -145,13 +145,36 @@ function schematic(layers, showDummies) {
     const top = (H - layer.length * gapY) / 2;
     layer.forEach((node, j) => centre.set(node.key, [x, top + j * gapY + boxH / 2]));
   });
+  /**
+   * The key one hop along from `node` on `link`.
+   *
+   * A routed link keeps its original source and target and carries the chain
+   * of dummy keys between them, and the same link object appears in the
+   * `outgoing` of every node on that chain. Where the hop lands therefore
+   * depends on where on the chain this node sits: off it — the real source —
+   * the first dummy; on it, the next dummy, or the target once the chain runs
+   * out. Taking `dummies[0]` regardless drew the first hop once per node on
+   * the chain, including a zero-length line from the first dummy to itself,
+   * and never drew the last hop at all, so nothing reached the final layer.
+   *
+   * @param {any} node
+   * @param {any} link
+   * @returns {string}
+   */
+  const nextHop = (node, link) => {
+    const chain = showDummies ? link.dummies : null;
+    if (!chain || !chain.length) return link.target;
+    const i = chain.indexOf(node.key);
+    return i < 0 ? chain[0] : (chain[i + 1] ?? link.target);
+  };
+
   const lines = el("g", { stroke: "#94a3b8", "stroke-opacity": 0.55, fill: "none" });
   for (const layer of layers) {
     for (const node of layer) {
+      if (node.dummy && !showDummies) continue;
       for (const link of node.outgoing) {
         const from = centre.get(node.key);
-        const target = showDummies && link.dummies ? link.dummies[0] : link.target;
-        const to = centre.get(target);
+        const to = centre.get(nextHop(node, link));
         if (from && to) {
           lines.appendChild(
             el("line", { x1: from[0] + 34, y1: from[1], x2: to[0] - 34, y2: to[1] })
