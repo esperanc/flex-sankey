@@ -102,8 +102,8 @@ for (const { name, opts } of figures) {
 
 /** Sectors appearing in both halves; the merge hinges on these. */
 const SECTORS = [
-  "Power industry", "Buildings", "Transport",
-  "Industrial combustion", "Processes", "Fuel exploitation"
+  "Power", "Buildings", "Transport",
+  "Industry", "Processes", "Fuel"
 ];
 
 const hybridPalette = ordinalColorScale([
@@ -136,8 +136,8 @@ const hybrid = combineRenderLayouts(
         [["Coal", "Nat Gas", "Oil", "Other fossil"], ["From fossil"]],
         [["Biofuel", "Hydro", "Nuclear", "Other renew.", "Solar", "Wind"], ["Clean energy"]],
         [["Clean energy", "From fossil"],
-         ["Power industry", "Buildings", "Transport", "Industrial combustion"]],
-        [["From fossil"], ["Fuel exploitation", "Processes"]]
+         ["Power", "Buildings", "Transport", "Industry"]],
+        [["From fossil"], ["Fuel", "Processes"]]
       ],
       sources: ["Biofuel", "Hydro", "Nuclear", "Other renew.", "Solar", "Wind",
                 "Coal", "Nat Gas", "Oil", "Other fossil"]
@@ -149,7 +149,7 @@ const hybrid = combineRenderLayouts(
   halfLayout(
     {
       linkPairs: [
-        [["Emissions"], [...SECTORS, "Agriculture", "LULUCF"]],
+        [["Emissions"], [...SECTORS, "Land use"]],
         [["CO2", "CH4", "FGas", "N2O"], ["Emissions"]]
       ],
       sources: ["CO2", "CH4", "FGas", "N2O"]
@@ -172,9 +172,9 @@ writeFileSync(
   sceneToPDF(
     paintScene(hybridScene, {
       colorScale: hybridPalette, pathColor: "source-target",
-      pathOpacity: 0.55, nodeStrokeWidth: 0, labelFont: "11px sans-serif"
+      pathOpacity: 0.55, nodeStrokeWidth: 0, labelFont: "21px sans-serif"
     }),
-    { title: "hybrid", margin: 4 }
+    { title: "hybrid", margin: 24 }
   )
 );
 console.log(
