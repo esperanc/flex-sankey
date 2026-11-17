@@ -286,6 +286,31 @@ const renderLayout = sankeyRenderLayout(geometry, { length: 800 });
 console.log(ordered.crossings);
 ```
 
+#### Reusing an ordering across datasets
+
+Because stage 3 both accepts and returns an ordering, one computed for a
+dataset can seed the next. For a diagram redrawn across successive years or
+comparable regions, a seeded run reaches a comparable ordering in a fraction of
+the steps a fresh one needs, and it keeps the two drawings visually comparable
+— nodes stay roughly where the reader last saw them:
+
+```js
+const a = sankeyOrderNodes(
+  sankeyAddDummies(sankeyLayers({ links: y2023 })),
+  { nsteps: 200, random: randomLcg(1) }
+);
+
+const seed = Object.fromEntries(a.layers.flat().map((n, i) => [n.key, i]));
+
+const b = sankeyOrderNodes(
+  sankeyAddDummies(sankeyLayers({ links: y2024 })),
+  { nsteps: 40, initialOrdering: seed }
+);
+```
+
+Nothing but the separation of the stages makes this possible: the ordering is
+an ordinary value, in and out.
+
 ### Reproducibility
 
 The ordering stage is randomised. It defaults to `Math.random`, which means two
