@@ -21,14 +21,16 @@ authors:
     affiliation: CEFET/RJ, Brazil
 repository-code: https://github.com/esperanc/flex-sankey
 url: https://esperanc.github.io/flex-sankey/
-doi: 10.5281/zenodo.24323814
+# The concept DOI, not a version one: this file is archived inside each
+# release, and a version DOI is minted only after that snapshot is taken, so
+# naming one here leaves every archived copy pointing at the release before
+# it. The concept DOI is correct in every copy. The paper cites the version
+# DOI instead, because a reproducible capsule has to pin an exact snapshot.
+doi: 10.5281/zenodo.22977231
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.24323814
-    description: Archived snapshot of release 0.1.1
-  - type: doi
     value: 10.5281/zenodo.22977231
-    description: Concept DOI, always resolving to the latest release
+    description: Concept DOI, always resolving to the latest archived release
 license: MIT
 version: 0.1.1
 date-released: '2026-11-17'
